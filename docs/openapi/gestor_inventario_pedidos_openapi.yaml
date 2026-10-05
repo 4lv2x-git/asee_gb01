@@ -1,0 +1,664 @@
+openapi: 3.0.3
+info:
+  title: Gestor de Inventario y Pedidos (Arquitectura Ampliada)
+  description: >
+    Módulo encargado de controlar la disponibilidad de entradas, pases y productos
+    de merchandising, así como de registrar las compras realizadas por los clientes.
+    El gestor comprueba la identidad y el rol del comprador mediante el Gestor de
+    Usuarios e Identificación y valida la existencia del festival y del pase mediante
+    el Gestor de Eventos cuando una compra lo requiere. También mantiene el stock,
+    el historial de pedidos y las solicitudes de cancelación de entradas.
+  version: 3.0.0
+servers:
+  - url: https://api.subsonicfestival.com/v1
+    description: API Gateway
+
+security:
+  - OAuth2: []
+
+tags:
+  - name: Inventario
+    description: Consulta y mantenimiento del catálogo de productos y su stock
+  - name: Pedidos
+    description: Creación y consulta de pedidos asociados al cliente autenticado
+  - name: Entradas
+    description: Gestión de entradas o pases adquiridos y solicitudes de cancelación
+  - name: Uso Interno
+    description: Operaciones utilizadas para la comunicación entre gestores
+
+paths:
+  # ==========================================
+  # INVENTARIO
+  # ==========================================
+  /inventario/productos:
+    get:
+      tags: [Inventario]
+      summary: Consultar productos y stock disponible
+      description: >
+        Devuelve los productos gestionados por el componente y la cantidad de stock
+        disponible. El producto puede representar una entrada, un pase o un artículo
+        de merchandising.
+        Lógica: consultar la información persistente del producto en el Gestor de
+        Inventario y Pedidos y devolverla sin modificar el stock.
+      security: []
+      parameters:
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [entrada, pase, merchandising]
+          description: Filtra los productos por tipo.
+        - name: disponible
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Si se indica true, devuelve únicamente productos con stock mayor que cero.
+      responses:
+        '200':
+          description: Productos y stock devueltos correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Producto'
+        '400':
+          description: Parámetros de consulta no válidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /inventario/productos/{producto_id}:
+    get:
+      tags: [Inventario]
+      summary: Consultar un producto y su stock
+      description: >
+        Devuelve el detalle de un producto, incluyendo su stock disponible.
+        Lógica: localizar el producto por su identificador y devolver sus datos.
+      security: []
+      parameters:
+        - name: producto_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único del producto.
+      responses:
+        '200':
+          description: Producto devuelto correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /inventario/productos/{producto_id}/stock:
+    patch:
+      tags: [Inventario]
+      summary: Actualizar el stock disponible de un producto
+      description: >
+        Modifica la cantidad de stock disponible de un producto.
+        Esta operación pertenece al gestor de Inventario y Pedidos y no sustituye
+        la reducción automática del stock que se realiza al confirmar un pedido.
+        Lógica: validar el identificador del producto, comprobar que la nueva cantidad
+        es válida y persistir el nuevo stock.
+      parameters:
+        - name: producto_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único del producto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockActualizacion'
+      responses:
+        '200':
+          description: Stock actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '400':
+          description: Cantidad de stock no válida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflicto al actualizar el stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # PEDIDOS
+  # ==========================================
+  /pedidos:
+    post:
+      tags: [Pedidos]
+      summary: Crear un pedido
+      description: >
+        Crea un pedido a partir de los productos seleccionados por el cliente.
+        Lógica: comprobar que el token corresponde a un usuario identificado con rol
+        cliente mediante el Gestor de Usuarios e Identificación; validar, cuando la
+        compra incluya un pase, que el festival y el pase existen mediante el Gestor
+        de Eventos; comprobar el stock de cada línea; calcular el importe total en el
+        backend; registrar el pedido y reducir el stock únicamente si todas las
+        validaciones son correctas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoCreacion'
+      responses:
+        '201':
+          description: Pedido creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pedido'
+        '400':
+          description: Datos del pedido no válidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: El usuario autenticado no tiene rol cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Producto, evento o pase no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: No hay stock suficiente o se produjo un conflicto de disponibilidad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags: [Pedidos]
+      summary: Consultar los pedidos del cliente autenticado
+      description: >
+        Devuelve el historial de pedidos asociado al usuario de la sesión.
+        Lógica: obtener el identificador del usuario autenticado a partir del contexto
+        de la petición, consultar los pedidos cuyo usuarioId coincide con ese
+        identificador y devolver también las entradas o pases asociados a sus compras.
+      responses:
+        '200':
+          description: Historial de pedidos devuelto correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pedido'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: El usuario no tiene permisos para consultar pedidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /pedidos/{pedido_id}:
+    get:
+      tags: [Pedidos]
+      summary: Consultar el detalle de un pedido propio
+      description: >
+        Devuelve un pedido concreto del cliente autenticado.
+        Lógica: localizar el pedido por pedido_id y comprobar que su usuarioId
+        coincide con la identidad de la sesión antes de devolverlo.
+      parameters:
+        - name: pedido_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único del pedido.
+      responses:
+        '200':
+          description: Pedido devuelto correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pedido'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: El pedido no pertenece al usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Pedido no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # ENTRADAS Y CANCELACIONES
+  # ==========================================
+  /entradas/{entrada_id}:
+    get:
+      tags: [Entradas]
+      summary: Consultar una entrada o pase adquirido
+      description: >
+        Devuelve los datos de una entrada o pase asociado al cliente autenticado.
+        Lógica: comprobar que la entrada existe y que pertenece al usuario de la sesión.
+      parameters:
+        - name: entrada_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la entrada adquirida.
+      responses:
+        '200':
+          description: Entrada devuelta correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntradaAdquirida'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: La entrada no pertenece al usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Entrada no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /entradas/{entrada_id}/cancelacion:
+    post:
+      tags: [Entradas]
+      summary: Solicitar la cancelación de una entrada adquirida
+      description: >
+        Registra una solicitud de cancelación para una entrada o pase comprado.
+        Lógica: verificar que la entrada existe, pertenece al cliente autenticado y
+        puede solicitar su cancelación; actualizar el estado de la entrada/pedido
+        para dejar constancia de la solicitud. La operación no se interpreta como
+        una devolución económica automática, ya que el documento de arquitectura
+        únicamente define la gestión de la solicitud de cancelación.
+      parameters:
+        - name: entrada_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único de la entrada adquirida.
+      responses:
+        '200':
+          description: Solicitud de cancelación registrada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntradaAdquirida'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: La entrada no pertenece al usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Entrada no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: La entrada no puede volver a solicitar su cancelación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # USO INTERNO: USUARIOS
+  # ==========================================
+  /interno/usuarios/{user_id}/verificar-cliente:
+    get:
+      tags: [Uso Interno]
+      summary: Comprobar que un usuario tiene rol cliente
+      description: >
+        Endpoint interno consumido por el Gestor de Inventario y Pedidos antes de crear
+        un pedido. Lógica: enviar el user_id al Gestor de Usuarios e Identificación y
+        devolver una confirmación booleana de si el usuario está identificado como cliente.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador del usuario que realiza la operación.
+      responses:
+        '200':
+          description: Comprobación realizada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComprobacionRol'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================
+  # USO INTERNO: EVENTOS
+  # ==========================================
+  /interno/eventos/{evento_id}/pases/{pase_id}:
+    get:
+      tags: [Uso Interno]
+      summary: Comprobar la existencia de un evento y un pase
+      description: >
+        Endpoint interno utilizado antes de registrar la compra de un pase.
+        Lógica: consultar al Gestor de Eventos para verificar que el evento existe,
+        que el pase pertenece a ese evento y obtener los datos del pase necesarios
+        para completar la compra.
+      parameters:
+        - name: evento_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador del festival/evento.
+        - name: pase_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador del pase dentro del evento.
+      responses:
+        '200':
+          description: Evento y pase existentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComprobacionPase'
+        '404':
+          description: El evento o el pase no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Producto:
+      type: object
+      required: [id, nombre, precio, tipo, stockDisponible]
+      properties:
+        id:
+          type: string
+          description: Identificador único del producto.
+        nombre:
+          type: string
+          description: Nombre comercial del producto.
+        descripcion:
+          type: string
+          description: Descripción del producto.
+        precio:
+          type: number
+          format: float
+          minimum: 0
+          description: Precio unitario del producto.
+        tipo:
+          type: string
+          enum: [entrada, pase, merchandising]
+          description: Tipo de producto gestionado por el componente.
+        stockDisponible:
+          type: integer
+          minimum: 0
+          description: Unidades disponibles para la venta.
+
+    StockActualizacion:
+      type: object
+      required: [stockDisponible]
+      properties:
+        stockDisponible:
+          type: integer
+          minimum: 0
+          description: Nueva cantidad total de stock disponible.
+
+    PedidoCreacion:
+      type: object
+      required: [lineas]
+      properties:
+        lineas:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineaPedidoCreacion'
+          description: Productos y cantidades seleccionados por el cliente.
+      example:
+        lineas:
+          - productoId: "prod-001"
+            cantidad: 2
+          - productoId: "pase-001"
+            cantidad: 1
+            eventoId: "evento-001"
+            paseId: "pase-001"
+
+    LineaPedidoCreacion:
+      type: object
+      required: [productoId, cantidad]
+      properties:
+        productoId:
+          type: string
+          description: Identificador del producto comprado.
+        cantidad:
+          type: integer
+          minimum: 1
+          description: Número de unidades solicitadas.
+        eventoId:
+          type: string
+          nullable: true
+          description: >
+            Identificador del evento al que pertenece la entrada o pase. Debe enviarse
+            cuando el producto corresponda a una entrada o pase asociado a un festival.
+        paseId:
+          type: string
+          nullable: true
+          description: >
+            Identificador del pase comprado. Debe enviarse cuando el producto corresponda
+            a un pase.
+
+    LineaPedido:
+      type: object
+      required: [productoId, cantidad, precioUnitario, subtotal]
+      properties:
+        productoId:
+          type: string
+        nombreProducto:
+          type: string
+        cantidad:
+          type: integer
+          minimum: 1
+        precioUnitario:
+          type: number
+          format: float
+          minimum: 0
+        subtotal:
+          type: number
+          format: float
+          minimum: 0
+        eventoId:
+          type: string
+          nullable: true
+        paseId:
+          type: string
+          nullable: true
+
+    Pedido:
+      type: object
+      required: [id, usuarioId, lineas, fechaCompra, importeTotal, estado]
+      properties:
+        id:
+          type: string
+          description: Identificador único del pedido.
+        usuarioId:
+          type: string
+          description: ID del usuario comprador.
+        lineas:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineaPedido'
+          description: Líneas de productos comprados.
+        fechaCompra:
+          type: string
+          format: date-time
+          description: Fecha y hora en la que se registró la compra.
+        importeTotal:
+          type: number
+          format: float
+          minimum: 0
+          description: Importe total calculado por el backend.
+        estado:
+          type: string
+          description: Estado actual del pedido.
+        entradas:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntradaAdquirida'
+          description: Entradas o pases asociados al pedido, cuando existan.
+
+    EntradaAdquirida:
+      type: object
+      required: [id, pedidoId, usuarioId, productoId, estado]
+      properties:
+        id:
+          type: string
+          description: Identificador único de la entrada adquirida.
+        pedidoId:
+          type: string
+          description: Pedido al que pertenece la entrada.
+        usuarioId:
+          type: string
+          description: Usuario que adquirió la entrada.
+        productoId:
+          type: string
+          description: Producto asociado a la entrada o pase.
+        eventoId:
+          type: string
+          nullable: true
+          description: Evento/festival al que corresponde la entrada o pase.
+        paseId:
+          type: string
+          nullable: true
+          description: Pase concreto adquirido, cuando corresponda.
+        fechaCompra:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de adquisición.
+        estado:
+          type: string
+          description: Estado de la entrada y de su eventual solicitud de cancelación.
+
+    ComprobacionRol:
+      type: object
+      required: [usuarioId, esCliente]
+      properties:
+        usuarioId:
+          type: string
+        esCliente:
+          type: boolean
+          description: Indica si el usuario tiene rol cliente.
+
+    ComprobacionPase:
+      type: object
+      required: [eventoId, paseId, existe]
+      properties:
+        eventoId:
+          type: string
+        paseId:
+          type: string
+        existe:
+          type: boolean
+          description: Indica si el evento y el pase solicitado existen y están relacionados.
+        nombrePase:
+          type: string
+          description: Nombre del pase, si existe.
+        precio:
+          type: number
+          format: float
+          minimum: 0
+          description: Precio del pase proporcionado por el Gestor de Eventos.
+
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo:
+          type: string
+          example: STOCK_INSUFICIENTE
+        mensaje:
+          type: string
+          example: No hay stock suficiente para completar la operación.
