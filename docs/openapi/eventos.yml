@@ -1,0 +1,989 @@
+openapi: 3.0.3
+info:
+  title: Gestor de Eventos (Festivales y Escaleta)
+  description: >
+    Módulo encargado de la gestión de festivales, fechas, escaleta de conciertos,
+    pases disponibles e inventario asociado. Incluye endpoints públicos para
+    visitantes/clientes, administrativos para el rol Admin y de uso interno para
+    la comunicación con otros gestores como Pedidos y Artistas.
+  version: 1.0.0
+servers:
+  - url: https://api.subsonicfestival.com/v1
+    description: API Gateway
+
+security:
+  - OAuth2: []
+
+tags:
+  - name: Eventos
+    description: Consulta pública y detalle de festivales
+  - name: Escaleta
+    description: Gestión de slots, horarios y artistas por evento
+  - name: Pases
+    description: Gestión de pases, precios y stock
+  - name: Administración
+    description: Operaciones exclusivas para el rol Admin
+  - name: Uso Interno
+    description: Endpoints para comunicación entre microservicios/gestores
+
+paths:
+  # ==========================================
+  # EVENTOS
+  # ==========================================
+  /eventos:
+    get:
+      tags: [Eventos]
+      summary: Listar y buscar eventos
+      description: Devuelve una lista paginada de eventos. Endpoint público para visitantes y clientes.
+      security: []
+      parameters:
+        - name: nombre
+          in: query
+          schema:
+            type: string
+        - name: fechaDesde
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: fechaHasta
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: ubicacion
+          in: query
+          schema:
+            type: string
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [borrador, publicado, cancelado, finalizado]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Lista de eventos devuelta correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventos'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    post:
+      tags: [Administración]
+      summary: Crear un nuevo evento
+      security:
+        - OAuth2: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventoCreacion'
+      responses:
+        '201':
+          description: Evento creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /eventos/{evento_id}:
+    get:
+      tags: [Eventos]
+      summary: Obtener detalle de un evento
+      description: Devuelve la información completa del evento, incluyendo escaleta y pases.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+      responses:
+        '200':
+          description: Evento encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventoDetalle'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Administración]
+      summary: Actualizar un evento
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventoEdicion'
+      responses:
+        '200':
+          description: Evento actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Administración]
+      summary: Eliminar un evento
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+      responses:
+        '204':
+          description: Evento eliminado correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /eventos/{evento_id}/estado:
+    patch:
+      tags: [Administración]
+      summary: Cambiar el estado de un evento
+      description: Permite publicar, cancelar o finalizar un evento sin eliminarlo.
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado:
+                  type: string
+                  enum: [borrador, publicado, cancelado, finalizado]
+      responses:
+        '200':
+          description: Estado del evento modificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evento'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==========================================
+  # ESCALETA
+  # ==========================================
+  /eventos/{evento_id}/escaleta:
+    get:
+      tags: [Escaleta]
+      summary: Listar la escaleta de un evento
+      description: Devuelve los slots o conciertos programados para un evento.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - name: fecha
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Escaleta devuelta correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Slot'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Administración]
+      summary: Añadir un slot a la escaleta
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlotCreacion'
+      responses:
+        '201':
+          description: Slot creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /eventos/{evento_id}/escaleta/{slot_id}:
+    put:
+      tags: [Administración]
+      summary: Actualizar un slot de la escaleta
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - $ref: '#/components/parameters/SlotId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlotEdicion'
+      responses:
+        '200':
+          description: Slot actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Administración]
+      summary: Eliminar un slot de la escaleta
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - $ref: '#/components/parameters/SlotId'
+      responses:
+        '204':
+          description: Slot eliminado correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==========================================
+  # PASES
+  # ==========================================
+  /eventos/{evento_id}/pases:
+    get:
+      tags: [Pases]
+      summary: Listar pases disponibles de un evento
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - name: incluirAgotados
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Lista de pases devuelta correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pase'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Administración]
+      summary: Crear un pase para un evento
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaseCreacion'
+      responses:
+        '201':
+          description: Pase creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /eventos/{evento_id}/pases/{pase_id}:
+    get:
+      tags: [Pases]
+      summary: Obtener detalle de un pase
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - $ref: '#/components/parameters/PaseId'
+      responses:
+        '200':
+          description: Pase encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pase'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Administración]
+      summary: Actualizar un pase
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - $ref: '#/components/parameters/PaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaseEdicion'
+      responses:
+        '200':
+          description: Pase actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Administración]
+      summary: Eliminar un pase
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - $ref: '#/components/parameters/PaseId'
+      responses:
+        '204':
+          description: Pase eliminado correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==========================================
+  # USO INTERNO
+  # ==========================================
+  /eventos/{evento_id}/pases/{pase_id}/disponibilidad:
+    get:
+      tags: [Uso Interno]
+      summary: Consultar disponibilidad de un pase
+      description: >
+        Usado por el Gestor de Pedidos antes de confirmar una compra.
+        Comprueba que el evento y el pase existen y que hay stock suficiente.
+      security:
+        - OAuth2: [pedidos]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - $ref: '#/components/parameters/PaseId'
+        - name: cantidad
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Disponibilidad consultada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisponibilidadPase'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /eventos/{evento_id}/pases/{pase_id}/stock:
+    patch:
+      tags: [Uso Interno]
+      summary: Ajustar el stock de un pase
+      description: >
+        Usado por el Gestor de Pedidos para restar stock tras una compra
+        o sumar stock si se cancela un pedido.
+      security:
+        - OAuth2: [pedidos]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+        - $ref: '#/components/parameters/PaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AjusteStock'
+      responses:
+        '200':
+          description: Stock actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaseStock'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /eventos/{evento_id}/artistas-ids:
+    get:
+      tags: [Uso Interno]
+      summary: Obtener IDs de artistas asociados a un evento
+      description: >
+        Usado por el Gestor de Artistas para conocer qué artistas están
+        programados en un evento, o por el API Gateway para agregar información.
+      security:
+        - OAuth2: [artistas]
+      parameters:
+        - $ref: '#/components/parameters/EventoId'
+      responses:
+        '200':
+          description: Lista de IDs de artistas devuelta correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistaIdsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    EventoId:
+      name: evento_id
+      in: path
+      required: true
+      schema:
+        type: string
+    SlotId:
+      name: slot_id
+      in: path
+      required: true
+      schema:
+        type: string
+    PaseId:
+      name: pase_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: Petición incorrecta o datos inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Token no proporcionado o inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: El usuario no tiene permisos suficientes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflicto de estado, por ejemplo stock insuficiente
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Paginacion:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    PaginatedEventos:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventoResumen'
+        paginacion:
+          $ref: '#/components/schemas/Paginacion'
+
+    Ubicacion:
+      type: object
+      properties:
+        nombre:
+          type: string
+        direccion:
+          type: string
+        ciudad:
+          type: string
+        pais:
+          type: string
+        latitud:
+          type: number
+          format: float
+        longitud:
+          type: number
+          format: float
+
+    EventoResumen:
+      type: object
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        fechaInicio:
+          type: string
+          format: date-time
+        fechaFin:
+          type: string
+          format: date-time
+        ubicacion:
+          $ref: '#/components/schemas/Ubicacion'
+        imagenUrl:
+          type: string
+          format: uri
+        estado:
+          type: string
+          enum: [borrador, publicado, cancelado, finalizado]
+        aforo:
+          type: integer
+
+    Evento:
+      allOf:
+        - $ref: '#/components/schemas/EventoResumen'
+        - type: object
+          properties:
+            creadoEn:
+              type: string
+              format: date-time
+            actualizadoEn:
+              type: string
+              format: date-time
+
+    EventoDetalle:
+      allOf:
+        - $ref: '#/components/schemas/Evento'
+        - type: object
+          properties:
+            escaleta:
+              type: array
+              items:
+                $ref: '#/components/schemas/Slot'
+            pases:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pase'
+            artistas:
+              type: array
+              description: Información agregada de artistas participantes
+              items:
+                $ref: '#/components/schemas/ArtistaResumen'
+
+    EventoCreacion:
+      type: object
+      required: [nombre, fechaInicio, fechaFin, ubicacion]
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        fechaInicio:
+          type: string
+          format: date-time
+        fechaFin:
+          type: string
+          format: date-time
+        ubicacion:
+          $ref: '#/components/schemas/Ubicacion'
+        imagenUrl:
+          type: string
+          format: uri
+        aforo:
+          type: integer
+        estado:
+          type: string
+          enum: [borrador, publicado, cancelado, finalizado]
+          default: borrador
+
+    EventoEdicion:
+      type: object
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        fechaInicio:
+          type: string
+          format: date-time
+        fechaFin:
+          type: string
+          format: date-time
+        ubicacion:
+          $ref: '#/components/schemas/Ubicacion'
+        imagenUrl:
+          type: string
+          format: uri
+        aforo:
+          type: integer
+        estado:
+          type: string
+          enum: [borrador, publicado, cancelado, finalizado]
+
+    Slot:
+      type: object
+      properties:
+        id:
+          type: string
+        eventoId:
+          type: string
+        artistaId:
+          type: string
+        nombreArtista:
+          type: string
+        imagenUrl:
+          type: string
+          format: uri
+        fecha:
+          type: string
+          format: date
+        horaInicio:
+          type: string
+          format: time
+        horaFin:
+          type: string
+          format: time
+        escenario:
+          type: string
+        orden:
+          type: integer
+
+    SlotCreacion:
+      type: object
+      required: [artistaId, fecha, horaInicio, horaFin]
+      properties:
+        artistaId:
+          type: string
+        fecha:
+          type: string
+          format: date
+        horaInicio:
+          type: string
+          format: time
+        horaFin:
+          type: string
+          format: time
+        escenario:
+          type: string
+        orden:
+          type: integer
+
+    SlotEdicion:
+      type: object
+      properties:
+        artistaId:
+          type: string
+        fecha:
+          type: string
+          format: date
+        horaInicio:
+          type: string
+          format: time
+        horaFin:
+          type: string
+          format: time
+        escenario:
+          type: string
+        orden:
+          type: integer
+
+    Pase:
+      type: object
+      properties:
+        id:
+          type: string
+        eventoId:
+          type: string
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        tipo:
+          type: string
+          enum: [general, vip, premium, abono, otro]
+        precio:
+          type: number
+          format: float
+        moneda:
+          type: string
+          default: EUR
+        stock:
+          type: integer
+        stockReservado:
+          type: integer
+        serviciosIncluidos:
+          type: array
+          items:
+            type: string
+        estado:
+          type: string
+          enum: [disponible, agotado, inactivo]
+        fechaInicioVenta:
+          type: string
+          format: date-time
+        fechaFinVenta:
+          type: string
+          format: date-time
+
+    PaseCreacion:
+      type: object
+      required: [nombre, precio, stock]
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        tipo:
+          type: string
+          enum: [general, vip, premium, abono, otro]
+        precio:
+          type: number
+          format: float
+        moneda:
+          type: string
+          default: EUR
+        stock:
+          type: integer
+          minimum: 0
+        serviciosIncluidos:
+          type: array
+          items:
+            type: string
+        estado:
+          type: string
+          enum: [disponible, agotado, inactivo]
+          default: disponible
+        fechaInicioVenta:
+          type: string
+          format: date-time
+        fechaFinVenta:
+          type: string
+          format: date-time
+
+    PaseEdicion:
+      type: object
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        tipo:
+          type: string
+          enum: [general, vip, premium, abono, otro]
+        precio:
+          type: number
+          format: float
+        moneda:
+          type: string
+        stock:
+          type: integer
+          minimum: 0
+        serviciosIncluidos:
+          type: array
+          items:
+            type: string
+        estado:
+          type: string
+          enum: [disponible, agotado, inactivo]
+        fechaInicioVenta:
+          type: string
+          format: date-time
+        fechaFinVenta:
+          type: string
+          format: date-time
+
+    DisponibilidadPase:
+      type: object
+      properties:
+        eventoId:
+          type: string
+        paseId:
+          type: string
+        existeEvento:
+          type: boolean
+        existePase:
+          type: boolean
+        disponible:
+          type: boolean
+        stockActual:
+          type: integer
+        cantidadSolicitada:
+          type: integer
+
+    AjusteStock:
+      type: object
+      required: [operacion, cantidad]
+      properties:
+        operacion:
+          type: string
+          enum: [decrementar, incrementar, establecer]
+        cantidad:
+          type: integer
+          minimum: 0
+
+    PaseStock:
+      type: object
+      properties:
+        eventoId:
+          type: string
+        paseId:
+          type: string
+        stockAnterior:
+          type: integer
+        stockActual:
+          type: integer
+        operacion:
+          type: string
+          enum: [decrementar, incrementar, establecer]
+        cantidad:
+          type: integer
+
+    ArtistaResumen:
+      type: object
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        imagenUrl:
+          type: string
+          format: uri
+
+    ArtistaIdsResponse:
+      type: object
+      properties:
+        eventoId:
+          type: string
+        artistaIds:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      properties:
+        codigo:
+          type: string
+        mensaje:
+          type: string
+        detalles:
+          type: array
+          items:
+            type: string

@@ -1,0 +1,365 @@
+openapi: 3.0.3
+info:
+  title: Gestor de Usuarios e Identificación (Arquitectura Ampliada)
+  description: >
+    Módulo para la gestión de cuentas, autenticación y perfiles,
+    preparado para entornos de producción con medidas de seguridad,
+    paginación, recuperación de cuentas y gestión de estados.
+  version: 1.0.0
+servers:
+  - url: https://api.subsonicfestival.com/v1
+    description: API Gateway
+
+
+security:
+  - OAuth2: []
+
+
+tags:
+  - name: Autenticación
+    description: Control de sesiones, inicio de sesión y recuperación
+  - name: Mi Perfil
+    description: Autogestión del propio usuario (Cliente/Proveedor/Admin)
+  - name: Administración
+    description: Gestión total de usuarios exclusiva para el rol Admin
+  - name: Uso Interno
+    description: Endpoints para comunicación entre microservicios/gestores
+
+
+paths:
+  # ==========================================
+  # AUTENTICACIÓN Y SESIÓN
+  # ==========================================
+  /auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Iniciar sesión
+      description: Autentica al usuario y devuelve un token de acceso seguro.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+
+
+  /auth/logout:
+    post:
+      tags: [Autenticación]
+      summary: Cerrar sesión
+      description: Invalida el token actual del usuario.
+      responses:
+        '200':
+          description: Sesión cerrada correctamente
+
+
+  /auth/verify:
+    get:
+      tags: [Autenticación]
+      summary: Verificar la identidad del usuario en el sistema
+      description: Realiza la verificación y autentificación de usuarios esperando un token en la cabecera.
+      responses:
+        '200':
+          description: Token válido, usuario autorizado
+        '401':
+          description: Token no recibido o inválido
+
+
+  /auth/forgot-password:
+    post:
+      tags: [Autenticación]
+      summary: Solicitar recuperación de contraseña
+      description: Envía un enlace o código temporal al correo del usuario.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+      responses:
+        '200':
+          description: Correo de recuperación enviado
+
+
+  /auth/verify-email:
+    post:
+      tags: [Autenticación]
+      summary: Verificar dirección de correo electrónico
+      description: Confirma el correo mediante el código enviado tras el registro.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                codigo:
+                  type: string
+      responses:
+        '200':
+          description: Correo verificado con éxito
+
+
+
+
+  # ==========================================
+  # MI PERFIL (Autogestión)
+  # ==========================================
+  /usuarios/perfil:
+    get:
+      tags: [Mi Perfil]
+      summary: Consultar los datos del perfil propio
+      responses:
+        '200':
+          description: Perfil del usuario devuelto con éxito
+    put:
+      tags: [Mi Perfil]
+      summary: Modificar los datos del perfil propio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioEdicion'
+      responses:
+        '200':
+          description: Perfil actualizado
+    delete:
+      tags: [Mi Perfil]
+      summary: Eliminar la propia cuenta
+      responses:
+        '204':
+          description: Cuenta eliminada con éxito
+
+
+  /usuarios/historial-espacios:
+    get:
+      tags: [Mi Perfil]
+      summary: Consultar el historial de participación del proveedor
+      security:
+        - OAuth2: [proveedor]
+      responses:
+        '200':
+          description: Lista de eventos y espacios del proveedor
+
+
+  # ==========================================
+  # ADMINISTRACIÓN
+  # ==========================================
+  /usuarios/admin:
+    post:
+      tags: [Administración]
+      summary: Creación de usuarios por administrador
+      security:
+        - OAuth2: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioRegistro'
+      responses:
+        '201':
+          description: Usuario creado por admin
+
+
+  /usuarios/admin/{user_id}:
+    put:
+      tags: [Administración]
+      summary: Actualizar información de cualquier usuario
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioEdicion'
+      responses:
+        '200':
+          description: Usuario actualizado
+    delete:
+      tags: [Administración]
+      summary: Eliminar un usuario del sistema
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usuario eliminado correctamente
+
+
+  /usuarios/admin/{user_id}/estado:
+    patch:
+      tags: [Administración]
+      summary: Suspender o activar una cuenta
+      description: Modifica el estado de acceso de un usuario sin eliminar sus datos.
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado:
+                  type: string
+                  enum: [activo, suspendido]
+      responses:
+        '200':
+          description: Estado de la cuenta modificado exitosamente
+
+
+  /usuarios/admin-password-reset/{user_id}:
+    put:
+      tags: [Administración]
+      summary: Modificación forzada de la contraseña de un usuario
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nuevaPassword:
+                  type: string
+      responses:
+        '200':
+          description: Contraseña modificada exitosamente
+
+
+  # ==========================================
+  # USO INTERNO
+  # ==========================================
+  /usuarios/{user_id}/verificar-rol:
+    get:
+      tags: [Uso Interno]
+      summary: Comprobación del rol del usuario para otros gestores
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: rolEsperado
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Respuesta booleana confirmando el rol
+
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        correo:
+          type: string
+          format: email
+        rol:
+          type: string
+          enum: [cliente, proveedor, visitante, admin]
+        estado:
+          type: string
+          enum: [activo, suspendido]
+        emailVerificado:
+          type: boolean
+        tipoServicio:
+          type: string
+        descripcionServicio:
+          type: string
+
+
+    UsuarioRegistro:
+      type: object
+      required: [nombre, correo, password, rol]
+      properties:
+        nombre:
+          type: string
+        correo:
+          type: string
+          format: email
+        password:
+          type: string
+        rol:
+          type: string
+          enum: [cliente, proveedor, admin]
+
+
+    UsuarioEdicion:
+      type: object
+      properties:
+        nombre:
+          type: string
+        direccion:
+          type: string
+        tipoServicio:
+          type: string
+        descripcionServicio:
+          type: string
+
+
+    LoginRequest:
+      type: object
+      required: [correo, password]
+      properties:
+        correo:
+          type: string
+          format: email
+        password:
+          type: string
+
+
+    EmailRequest:
+      type: object
+      required: [correo]
+      properties:
+        correo:
+          type: string
+          format: email
