@@ -1,0 +1,208 @@
+openapi: 3.0.3
+info:
+  title: Gestor de Espacios - Subsonic Festival
+  description: >
+    Módulo encargado de administrar los espacios que los proveedores pueden alquilar
+    dentro de cada evento. Controla la disponibilidad, precios y vinculación de reservas.
+  version: 1.0.0
+servers:
+  - url: https://api.subsonicfestival.com/v1
+    description: API Gateway
+
+security:
+  - OAuth2: []
+
+tags:
+  - name: Recintos y Espacios
+    description: Gestión completa de los recintos y alquiler de espacios para proveedores.
+
+paths:
+  /api/grounds:
+    get:
+      tags: [Recintos y Espacios]
+      summary: Listar y buscar espacios
+      description: >
+        Devuelve todos los recintos en el sistema. Permite a los proveedores filtrar por 
+        tipo, tamaño, ubicación y precio. Es un método público.
+      security: []
+      parameters:
+        - name: tipo
+          in: query
+          description: Filtrar por tipo de espacio o servicio (ej. comida, merchandising).
+          schema:
+            type: string
+        - name: ubicacion
+          in: query
+          description: Filtrar por ubicación dentro del festival.
+          schema:
+            type: string
+        - name: precio_max
+          in: query
+          description: Filtrar por precio máximo de alquiler.
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Lista de espacios devuelta exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Espacio'
+
+    post:
+      tags: [Recintos y Espacios]
+      summary: Registrar un nuevo espacio o recinto
+      description: >
+        Registra e inserta recintos en la aplicación. 
+        Protegido solo para el uso de administradores y proveedores.
+      security:
+        - OAuth2: [admin, proveedor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EspacioInput'
+      responses:
+        '201':
+          description: Espacio creado con éxito
+
+  /api/grounds/{ground_id}:
+    put:
+      tags: [Recintos y Espacios]
+      summary: Modificar los detalles de un espacio
+      description: >
+        Modifica los detalles de un recinto (capacidad, dirección, nombre) 
+        sin tener que borrarlo y recrearlo.
+      security:
+        - OAuth2: [admin, proveedor]
+      parameters:
+        - name: ground_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EspacioInput'
+      responses:
+        '200':
+          description: Espacio actualizado correctamente
+
+    delete:
+      tags: [Recintos y Espacios]
+      summary: Eliminar un espacio
+      description: >
+        Elimina un recinto almacenado a través de su identificador. 
+        Método protegido solo para administradores o proveedores.
+      security:
+        - OAuth2: [admin, proveedor]
+      parameters:
+        - name: ground_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Espacio eliminado correctamente
+
+  /api/grounds/{ground_id}/alquilar:
+    post:
+      tags: [Recintos y Espacios]
+      summary: Registrar el alquiler de un espacio
+      description: >
+        Registra el alquiler, cambiando su estado, y lo vincula con el proveedor 
+        solicitante y el evento correspondiente.
+      security:
+        - OAuth2: [proveedor]
+      parameters:
+        - name: ground_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [proveedor_id]
+              properties:
+                proveedor_id:
+                  type: string
+                  description: Identificador del proveedor que realiza la reserva.
+      responses:
+        '200':
+          description: Alquiler registrado exitosamente
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Espacio:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador único del espacio.
+        evento_id:
+          type: string
+          description: Identificador del evento al que pertenece.
+        tipo:
+          type: string
+          description: Tipo de espacio o servicio permitido.
+        dimensiones:
+          type: string
+          description: Dimensiones o capacidad del recinto.
+        ubicacion:
+          type: string
+          description: Ubicación física dentro del recinto principal.
+        servicios_incluidos:
+          type: array
+          items:
+            type: string
+          description: Lista de servicios que incluye el alquiler (luz, agua, etc.).
+        precio:
+          type: number
+          description: Precio del alquiler.
+        estado:
+          type: string
+          enum: [disponible, reservado, ocupado]
+          description: Estado actual del recinto.
+        proveedor_id:
+          type: string
+          description: Identificador del proveedor (solo si existe una reserva o alquiler).
+
+    EspacioInput:
+      type: object
+      required: [evento_id, tipo, dimensiones, precio]
+      properties:
+        evento_id:
+          type: string
+        tipo:
+          type: string
+        dimensiones:
+          type: string
+        ubicacion:
+          type: string
+        servicios_incluidos:
+          type: array
+          items:
+            type: string
+        precio:
+          type: number
+        estado:
+          type: string
+          enum: [disponible, reservado, ocupado]
+          default: disponible
