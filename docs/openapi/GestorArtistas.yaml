@@ -1,0 +1,268 @@
+openapi: 3.0.3
+info:
+  title: Gestor de Artistas - Subsonic Festival
+  description: >
+    Módulo para la gestión de músicos y bandas que participan en los eventos.
+    Proporciona información multimedia, biografías, relación con festivales y
+    canciones destacadas (con soporte condicionado para URIs de Spotify).
+  version: 1.1.0
+servers:
+  - url: https://api.subsonicfestival.com/v1
+    description: API Gateway
+
+security:
+  - OAuth2: []
+
+tags:
+  - name: Catálogo Público
+    description: Consulta de artistas y sus fichas (disponible para Visitantes, Clientes y Proveedores)
+  - name: Multimedia y Música
+    description: Gestión de canciones destacadas y enlaces a plataformas externas
+  - name: Uso Interno
+    description: Endpoints para comunicación entre microservicios (Ej. Gestor de Eventos)
+  - name: Administración
+    description: Mantenimiento del catálogo de artistas (exclusivo Admin)
+
+paths:
+  # ==========================================
+  # CATÁLOGO PÚBLICO
+  # ==========================================
+  /artistas:
+    get:
+      tags: [Catálogo Público]
+      summary: Listar todos los artistas
+      description: Devuelve una lista resumida de los artistas disponibles en el sistema.
+      security: []
+      responses:
+        '200':
+          description: Lista de artistas obtenida correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArtistaResumen'
+
+  /artistas/{artista_id}:
+    get:
+      tags: [Catálogo Público]
+      summary: Consultar la ficha detallada de un artista
+      description: Muestra la información completa del artista, incluyendo imagen, biografía y redes sociales.
+      security: []
+      parameters:
+        - name: artista_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ficha del artista devuelta con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistaDetalle'
+        '404':
+          description: Artista no encontrado
+
+  # ==========================================
+  # MULTIMEDIA Y MÚSICA
+  # ==========================================
+  /artistas/{artista_id}/canciones:
+    get:
+      tags: [Multimedia y Música]
+      summary: Obtener canciones destacadas del artista
+      description: >
+        Devuelve la lista de canciones más conocidas. Si la integración con Spotify 
+        está activa, incluye las URIs para su consulta externa; en caso contrario, 
+        solo devuelve información local no reproducible.
+      security: []
+      parameters:
+        - name: artista_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de canciones obtenida con éxito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cancion'
+
+  # ==========================================
+  # USO INTERNO (Gestor de Eventos)
+  # ==========================================
+  /artistas/interno/lote:
+    post:
+      tags: [Uso Interno]
+      summary: Obtener información multimedia de varios artistas por ID
+      description: >
+        Utilizado por el Gestor de Eventos para cruzar datos. Recibe una lista de 
+        IDs de artistas y devuelve sus nombres, imágenes, biografías y canciones destacadas.
+      security:
+        - OAuth2: [servicio_interno]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Fichas de los artistas solicitados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArtistaDetalle'
+
+  # ==========================================
+  # ADMINISTRACIÓN
+  # ==========================================
+  /artistas/admin:
+    post:
+      tags: [Administración]
+      summary: Registrar un nuevo artista
+      security:
+        - OAuth2: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistaRegistro'
+      responses:
+        '201':
+          description: Artista creado exitosamente
+
+  /artistas/admin/{artista_id}:
+    put:
+      tags: [Administración]
+      summary: Modificar los datos de un artista
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - name: artista_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistaRegistro'
+      responses:
+        '200':
+          description: Ficha del artista actualizada
+    delete:
+      tags: [Administración]
+      summary: Eliminar un artista del sistema
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - name: artista_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Artista eliminado correctamente
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ArtistaResumen:
+      type: object
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        imagen:
+          type: string
+          format: uri
+          description: URL de la imagen principal del artista
+
+    ArtistaDetalle:
+      type: object
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        imagen:
+          type: string
+          format: uri
+        biografia:
+          type: string
+        redesSociales:
+          type: object
+          properties:
+            instagram:
+              type: string
+              format: uri
+            twitter:
+              type: string
+              format: uri
+            web:
+              type: string
+              format: uri
+        eventosVinculados:
+          type: array
+          description: Identificadores de los eventos en los que participa el artista
+          items:
+            type: string
+        cancionesDestacadas:
+          type: array
+          description: Lista incrustada de canciones (para cuando el Gestor de Eventos pide todo de una vez)
+          items:
+            $ref: '#/components/schemas/Cancion'
+
+    Cancion:
+      type: object
+      properties:
+        titulo:
+          type: string
+        album:
+          type: string
+        uriSpotify:
+          type: string
+          description: URI o ID de Spotify (condicionado a la viabilidad de la API)
+
+    ArtistaRegistro:
+      type: object
+      required: [nombre, biografia]
+      properties:
+        nombre:
+          type: string
+        imagen:
+          type: string
+          format: uri
+        biografia:
+          type: string
+        redesSociales:
+          type: object
+          additionalProperties:
+            type: string
+        eventosVinculados:
+          type: array
+          items:
+            type: string
