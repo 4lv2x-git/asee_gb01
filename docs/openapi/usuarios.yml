@@ -1,11 +1,12 @@
 openapi: 3.0.3
 info:
-  title: Gestor de Usuarios e Identificación (Arquitectura Ampliada)
+  title: Gestor de Usuarios e Identificación - Subsonic Festival
   description: >
-    Módulo para la gestión de cuentas, autenticación y perfiles,
-    preparado para entornos de producción con medidas de seguridad,
-    paginación, recuperación de cuentas y gestión de estados.
-  version: 1.0.0
+    API completa para la gestión de cuentas, autenticación OAuth2 y perfiles,
+    adaptada a los perfiles de visitante, cliente, proveedor y administrador.
+  version: 3.2.0
+
+
 servers:
   - url: https://api.subsonicfestival.com/v1
     description: API Gateway
@@ -16,25 +17,48 @@ security:
 
 
 tags:
-  - name: Autenticación
-    description: Control de sesiones, inicio de sesión y recuperación
-  - name: Mi Perfil
-    description: Autogestión del propio usuario (Cliente/Proveedor/Admin)
+  - name: Autenticación y Registro
+    description: Endpoints abiertos para visitantes (registro, login y recuperación de cuenta)
+  - name: Mi Perfil (Cliente / Proveedor)
+    description: Autogestión y consulta de datos del propio usuario autenticado
   - name: Administración
-    description: Gestión total de usuarios exclusiva para el rol Admin
+    description: Moderación, suspensión de cuentas y soporte exclusivo para el rol Admin
   - name: Uso Interno
-    description: Endpoints para comunicación entre microservicios/gestores
+    description: Endpoints protegidos para la comunicación entre microservicios/gestores
 
 
 paths:
   # ==========================================
-  # AUTENTICACIÓN Y SESIÓN
+  # AUTENTICACIÓN Y REGISTRO (Visitantes / Usuarios)
   # ==========================================
+  /auth/register:
+    post:
+      tags: [Autenticación y Registro]
+      summary: Registro de nuevos usuarios (Cliente o Proveedor)
+      description: Permite a un visitante registrarse aportando sus datos, rol y detalles específicos si es proveedor.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioRegistro'
+      responses:
+        '201':
+          description: Usuario registrado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Datos de registro inválidos o correo ya registrado
+
+
   /auth/login:
     post:
-      tags: [Autenticación]
+      tags: [Autenticación y Registro]
       summary: Iniciar sesión
-      description: Autentica al usuario y devuelve un token de acceso seguro.
+      description: Autentica al usuario mediante credenciales y devuelve un token JWT seguro.
       security: []
       requestBody:
         required: true
@@ -44,12 +68,12 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Inicio de sesión exitoso
+          description: Inicio de sesión exitoso con token de acceso
 
 
   /auth/logout:
     post:
-      tags: [Autenticación]
+      tags: [Autenticación y Registro]
       summary: Cerrar sesión
       description: Invalida el token actual del usuario.
       responses:
@@ -59,9 +83,9 @@ paths:
 
   /auth/verify:
     get:
-      tags: [Autenticación]
-      summary: Verificar la identidad del usuario en el sistema
-      description: Realiza la verificación y autentificación de usuarios esperando un token en la cabecera.
+      tags: [Autenticación y Registro]
+      summary: Verificar identidad del usuario
+      description: Valida la vigencia y validez del token JWT recibido en la cabecera.
       responses:
         '200':
           description: Token válido, usuario autorizado
@@ -71,9 +95,9 @@ paths:
 
   /auth/forgot-password:
     post:
-      tags: [Autenticación]
+      tags: [Autenticación y Registro]
       summary: Solicitar recuperación de contraseña
-      description: Envía un enlace o código temporal al correo del usuario.
+      description: Envía un enlace temporal al correo electrónico registrado.
       security: []
       requestBody:
         required: true
@@ -88,9 +112,9 @@ paths:
 
   /auth/verify-email:
     post:
-      tags: [Autenticación]
+      tags: [Autenticación y Registro]
       summary: Verificar dirección de correo electrónico
-      description: Confirma el correo mediante el código enviado tras el registro.
+      description: Confirma el email mediante el código recibido tras el registro.
       security: []
       requestBody:
         required: true
@@ -98,6 +122,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [codigo]
               properties:
                 codigo:
                   type: string
@@ -106,21 +131,25 @@ paths:
           description: Correo verificado con éxito
 
 
-
-
   # ==========================================
-  # MI PERFIL (Autogestión)
+  # MI PERFIL (Autogestión Cliente / Proveedor)
   # ==========================================
   /usuarios/perfil:
     get:
-      tags: [Mi Perfil]
+      tags: [Mi Perfil (Cliente / Proveedor)]
       summary: Consultar los datos del perfil propio
+      description: Permite a un cliente o proveedor consultar su información personal y de servicio.
       responses:
         '200':
-          description: Perfil del usuario devuelto con éxito
-    put:
-      tags: [Mi Perfil]
-      summary: Modificar los datos del perfil propio
+          description: Perfil devuelto con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+    patch:
+      tags: [Mi Perfil (Cliente / Proveedor)]
+      summary: Modificar parcialmente los datos del perfil propio
+      description: Permite actualizar campos específicos (ej. dirección, nombre, descripción del servicio) sin enviar el objeto completo.
       requestBody:
         required: true
         content:
@@ -129,10 +158,11 @@ paths:
               $ref: '#/components/schemas/UsuarioEdicion'
       responses:
         '200':
-          description: Perfil actualizado
+          description: Perfil actualizado correctamente
     delete:
-      tags: [Mi Perfil]
+      tags: [Mi Perfil (Cliente / Proveedor)]
       summary: Eliminar la propia cuenta
+      description: Da de baja la cuenta del usuario en la plataforma.
       responses:
         '204':
           description: Cuenta eliminada con éxito
@@ -140,39 +170,42 @@ paths:
 
   /usuarios/historial-espacios:
     get:
-      tags: [Mi Perfil]
+      tags: [Mi Perfil (Cliente / Proveedor)]
       summary: Consultar el historial de participación del proveedor
+      description: Permite al proveedor consultar los eventos y espacios en los que ha participado mediante los vínculos de su ID.
       security:
         - OAuth2: [proveedor]
       responses:
         '200':
-          description: Lista de eventos y espacios del proveedor
+          description: Lista de eventos y espacios alquilados
 
 
   # ==========================================
-  # ADMINISTRACIÓN
+  # ADMINISTRACIÓN (Moderación y Soporte)
   # ==========================================
   /usuarios/admin:
-    post:
+    get:
       tags: [Administración]
-      summary: Creación de usuarios por administrador
+      summary: Listar todos los usuarios del sistema
+      description: Permite al administrador visualizar el listado completo de cuentas registradas (clientes y proveedores).
       security:
         - OAuth2: [admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UsuarioRegistro'
       responses:
-        '201':
-          description: Usuario creado por admin
+        '200':
+          description: Listado de usuarios obtenido correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
 
 
   /usuarios/admin/{user_id}:
     put:
       tags: [Administración]
       summary: Actualizar información de cualquier usuario
+      description: Permite al administrador corregir o actualizar datos de un usuario por motivos de soporte.
       security:
         - OAuth2: [admin]
       parameters:
@@ -189,10 +222,11 @@ paths:
               $ref: '#/components/schemas/UsuarioEdicion'
       responses:
         '200':
-          description: Usuario actualizado
+          description: Usuario actualizado por administración
     delete:
       tags: [Administración]
-      summary: Eliminar un usuario del sistema
+      summary: Eliminar un usuario del sistema (Moderación)
+      description: Elimina una cuenta de forma permanente por incumplimiento de normas.
       security:
         - OAuth2: [admin]
       parameters:
@@ -210,7 +244,7 @@ paths:
     patch:
       tags: [Administración]
       summary: Suspender o activar una cuenta
-      description: Modifica el estado de acceso de un usuario sin eliminar sus datos.
+      description: Modifica el estado de acceso (bloqueo/desbloqueo) de un usuario sin borrar sus datos.
       security:
         - OAuth2: [admin]
       parameters:
@@ -225,6 +259,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [estado]
               properties:
                 estado:
                   type: string
@@ -238,6 +273,7 @@ paths:
     put:
       tags: [Administración]
       summary: Modificación forzada de la contraseña de un usuario
+      description: Herramienta de soporte técnico para reasignar credenciales bloqueadas.
       security:
         - OAuth2: [admin]
       parameters:
@@ -252,6 +288,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [nuevaPassword]
               properties:
                 nuevaPassword:
                   type: string
@@ -261,12 +298,13 @@ paths:
 
 
   # ==========================================
-  # USO INTERNO
+  # USO INTERNO (Comunicación entre Gestores)
   # ==========================================
   /usuarios/{user_id}/verificar-rol:
     get:
       tags: [Uso Interno]
       summary: Comprobación del rol del usuario para otros gestores
+      description: Endpoint consumido internamente por el Gestor de Espacios o de Inventario/Pedidos para verificar privilegios.
       parameters:
         - name: user_id
           in: path
@@ -278,9 +316,19 @@ paths:
           required: true
           schema:
             type: string
+            enum: [cliente, proveedor]
       responses:
         '200':
-          description: Respuesta booleana confirmando el rol
+          description: Confirmación del rol del usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  rolValido:
+                    type: boolean
 
 
 components:
@@ -312,6 +360,7 @@ components:
           type: boolean
         tipoServicio:
           type: string
+          description: Tipo de servicio ofertado si es proveedor (comida, bebida, merchandising u otro)
         descripcionServicio:
           type: string
 
@@ -329,7 +378,12 @@ components:
           type: string
         rol:
           type: string
-          enum: [cliente, proveedor, admin]
+          enum: [cliente, proveedor]
+        tipoServicio:
+          type: string
+          description: Obligatorio si el rol es proveedor
+        descripcionServicio:
+          type: string
 
 
     UsuarioEdicion:
@@ -363,3 +417,5 @@ components:
         correo:
           type: string
           format: email
+
+
