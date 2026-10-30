@@ -16,9 +16,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# ==========================================
 # DEPENDENCIA DE SEGURIDAD Y ROLES
-# ==========================================
 def verificar_roles(roles_permitidos: List[str]):
     def validador(x_user_role: str = Header(default="admin", alias="X-User-Role")):
         if x_user_role.lower() not in roles_permitidos:
@@ -29,9 +27,7 @@ def verificar_roles(roles_permitidos: List[str]):
         return x_user_role
     return validador
 
-# ==========================================
-# RUTAS EXACTAS DE ESPACIOS.YAML (/api/grounds)
-# ==========================================
+# RUTAS (/api/grounds)
 @app.get(
     "/api/grounds",
     response_model=List[schemas.Espacio],
