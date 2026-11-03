@@ -1,0 +1,32 @@
+[project]
+name = "subsonic-users-auth"
+version = "0.1.0"
+description = "Microservicio de autenticacion y gestion de usuarios de Subsonic Festival"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "beanie>=1.26.0",
+    "motor>=3.6.0",
+    "pydantic[email]>=2.8.0",
+    "pydantic-settings>=2.4.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "bcrypt<5",
+    "httpx>=0.27.0",
+    "pymongo>=4.8.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.23.0",
+    "mongomock-motor>=0.0.35",
+    "asgi-lifespan>=2.1.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+testpaths = ["tests"]
