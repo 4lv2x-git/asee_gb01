@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.api.deps import get_current_user, get_token_payload
 from app.models.user import User
-from app.schemas.auth import EmailRequest, LoginRequest, TokenResponse, VerifyEmailRequest
+from app.schemas.auth import EmailRequest, LoginRequest, TokenResponse, VerifyEmailRequest, ResetPasswordRequest
 from app.schemas.common import MessageResponse
 from app.schemas.user import Usuario, UsuarioRegistro, user_to_schema
 from app.services.auth_service import AuthService
@@ -38,6 +38,11 @@ async def verify(_user: Annotated[User, Depends(get_current_user)]) -> MessageRe
 async def forgot_password(data: EmailRequest) -> MessageResponse:
     await AuthService().forgot_password(str(data.correo))
     return MessageResponse(message="Si el correo existe, se enviara un enlace de recuperacion")
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(data: ResetPasswordRequest) -> MessageResponse:
+    await AuthService().reset_password(str(data.codigo), str(data.nuevaPassword))
+    return MessageResponse(message="Contraseña cambiada correctamente")
 
 
 @router.post("/verify-email", response_model=Usuario)

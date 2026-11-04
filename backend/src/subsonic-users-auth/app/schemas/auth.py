@@ -20,3 +20,7 @@ class EmailRequest(CamelModel):
 
 class VerifyEmailRequest(CamelModel):
     codigo: str = Field(min_length=1)
+
+class ResetPasswordRequest(CamelModel):
+    nuevaPassword: str = Field(min_length=8)
+    codigo: str = Field(min_length=16)

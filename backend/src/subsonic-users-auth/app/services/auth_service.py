@@ -78,6 +78,27 @@ class AuthService:
             return
         await self.create_verification_code(str(user.id), TipoCodigo.PASSWORD_RESET)
 
+    async def reset_password(self, codigo: str, nueva_password: str) -> None:
+        if not codigo or not nueva_password:
+            raise ValidationError("Codigo y nueva contraseña son requeridos")
+
+        code = await self.verification_codes.find_active_by_hash(
+            tipo=TipoCodigo.PASSWORD_RESET,
+            code_hash=hash_code(codigo),
+            now=utc_now(),
+        )
+        if not code:
+            raise ValidationError("Codigo invalido o expirado")
+        user = await self.users.get_by_id(code.user_id)
+        if len(nueva_password) < 8:
+            raise ValidationError("La nueva contraseña debe tener al menos 8 caracteres")
+        if not user:
+            raise ValidationError("Codigo invalido o expirado")
+        await self.users.update(user, {"password": hash_password(nueva_password)})
+        await self.verification_codes.mark_used(code)
+
+        # ! Queda pendiente revocar los tokens vigentes del usuario
+
     async def verify_email(self, codigo: str) -> User:
         code = await self.verification_codes.find_active_by_hash(
             tipo=TipoCodigo.EMAIL_VERIFICATION,

@@ -31,10 +31,11 @@ python scripts/seed_admin.py
 
 ## Lagunas del contrato documentadas
 
-- `direccion` se guarda y se devuelve en `Usuario` para mantener coherencia con `UsuarioEdicion`.
-- `forgot-password` genera codigo de recuperacion, pero el contrato no define endpoint publico para consumirlo.
+- ~~`direccion` se guarda y se devuelve en `Usuario` para mantener coherencia con `UsuarioEdicion`.~~
+- ~~`forgot-password` genera codigo de recuperacion, pero el contrato no define endpoint publico para consumirlo.~~
 - `GET /usuarios/{user_id}/verificar-rol` exige `X-Internal-Key`, aunque el YAML no lo declare.
 - `POST /auth/login` devuelve `TokenResponse {accessToken, tokenType, expiresIn}`.
+- `POST /auth/reset-password` no revoca los tokens anteriores una vez que se cambia la contraseña.
 
 ## Tests
 
