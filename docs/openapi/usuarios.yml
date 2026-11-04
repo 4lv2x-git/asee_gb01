@@ -69,6 +69,14 @@ paths:
       responses:
         '200':
           description: Inicio de sesión exitoso con token de acceso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Credenciales inválidas
+        '403':
+          description: Sesión no iniciada (Cuenta suspendida)
 
 
   /auth/logout:
