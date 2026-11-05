@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres-inventory:
+    image: postgres:15
+    container_name: postgres-inventory
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_inventory_data:/var/lib/postgresql/data
+    networks:
+      - subsonic-network
+
+  inventory-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventory-manager
+    restart: always
+    depends_on:
+      - postgres-inventory
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-inventory:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8081:8081"
+    networks:
+      - subsonic-network
+
+volumes:
+  postgres_inventory_data:
+
+networks:
+  subsonic-network:
+    driver: bridge
