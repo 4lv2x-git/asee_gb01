@@ -94,7 +94,7 @@ class AuthService:
             raise ValidationError("La nueva contraseña debe tener al menos 8 caracteres")
         if not user:
             raise ValidationError("Codigo invalido o expirado")
-        await self.users.update(user, {"password": hash_password(nueva_password)})
+        await self.users.update(user, {"password_hash": hash_password(nueva_password)})
         await self.verification_codes.mark_used(code)
 
         # ! Queda pendiente revocar los tokens vigentes del usuario
