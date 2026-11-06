@@ -69,6 +69,14 @@ paths:
       responses:
         '200':
           description: Inicio de sesión exitoso con token de acceso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Credenciales inválidas
+        '403':
+          description: Sesión no iniciada (Cuenta suspendida)
 
 
   /auth/logout:
@@ -97,7 +105,7 @@ paths:
     post:
       tags: [Autenticación y Registro]
       summary: Solicitar recuperación de contraseña
-      description: Envía un enlace temporal al correo electrónico registrado.
+      description: Envía un enlace temporal al correo electrónico registrado. Se deben limitar las peticiones a un máximo de 5 peticiones por hora.
       security: []
       requestBody:
         required: true
@@ -109,6 +117,25 @@ paths:
         '200':
           description: Correo de recuperación enviado
 
+  /auth/reset-password:
+    post:
+      tags: [Autenticación y Registro]
+      summary: Cambia contraseña de usuario
+      description: Cambia la contraseña del usuario a partir del código temporal enviado por `POST /auth/forgot-password`. El código es de un solo uso, caduca a los 15 minutos y solo es válido para recuperación de contraseña. Si el código es válido, se actualiza la contraseña del usuario, se marca el código como consumido y se invalidan todos los tokens JWT vigentes del usuario. No requiere sesión iniciada; el código actúa como prueba de identidad. Se debe limitar las peticiones a un máximo de 5 por hora.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Contraseña cambiada con éxito
+        '400':
+          description: Código de verificación inválido, expirado o contraseña inválida
+        '429':
+          description: Demasiados intentos de cambio de contraseña. Inténtalo de nuevo más tarde
 
   /auth/verify-email:
     post:
@@ -305,6 +332,8 @@ paths:
       tags: [Uso Interno]
       summary: Comprobación del rol del usuario para otros gestores
       description: Endpoint consumido internamente por el Gestor de Espacios o de Inventario/Pedidos para verificar privilegios.
+      security:
+        - InternalApiKey: []
       parameters:
         - name: user_id
           in: path
@@ -337,6 +366,11 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    InternalApiKey:
+      type: apiKey
+      in: header
+      name: X-Internal-Key
+      description: Clave interna para uso exclusivo de los microservicios. Se envía en cabecera 'X-Internal-Key' en operaciones internas.
 
 
   schemas:
@@ -362,6 +396,8 @@ components:
           type: string
           description: Tipo de servicio ofertado si es proveedor (comida, bebida, merchandising u otro)
         descripcionServicio:
+          type: string
+        direccion:
           type: string
 
 
@@ -418,4 +454,27 @@ components:
           type: string
           format: email
 
+    ResetPasswordRequest:
+      type: object
+      required: [nuevaPassword, codigo]
+      properties:
+        nuevaPassword:
+          type: string
+          minLength: 8
+        codigo:
+          type: string
+          minLength: 16
 
+    TokenResponse:
+      type: object
+      required: [token]
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          enum: [bearer]
+          default: bearer
+        expires_in:
+          type: integer
+          example: 3600
