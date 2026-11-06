@@ -37,8 +37,9 @@ Resueltas:
 - ~~`GET /usuarios/{user_id}/verificar-rol` exige `X-Internal-Key`, aunque el YAML no lo declare.~~ -> Creada  `InternalApiKey`.
 - ~~`POST /auth/login` devuelve `TokenResponse {accessToken, tokenType, expiresIn}`.~~ -> `POST /auth/login` devuelve `TokenResponse {accessToken, tokenType, expiresIn}`
 
+- `POST /auth/reset-password` incrementa `token_version` al cambiar la contraseña y revoca los tokens anteriores del usuario.
+
 Por resolver:
-- `POST /auth/reset-password` no revoca los tokens anteriores una vez que se cambia la contraseña.
 - `POST /auth/forgot-password` y `POST /auth/reset-password` no tienen rate limit.
 
 ## Tests

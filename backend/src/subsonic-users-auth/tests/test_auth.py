@@ -238,9 +238,50 @@ async def test_reset_password_codigo_de_un_solo_uso(client, password_reset):
     assert (await client.post("/v1/auth/reset-password", json=payload)).status_code == 400
 
 
+@pytest.mark.parametrize("initial_version", [0, 4])
+async def test_reset_password_revoca_sesiones_del_usuario(client, password_reset, initial_version):
+    raw_code, _ = password_reset
+    user = await User.find_one(User.correo_normalizado == "cliente@example.com")
+    user.token_version = initial_version
+    await user.save()
+    old_tokens = []
+    for _ in range(2):
+        response = await login(client)
+        assert response.status_code == 200
+        old_tokens.append(response.json()["accessToken"])
+    assert old_tokens[0] != old_tokens[1]
+    for token in old_tokens:
+        headers = {"Authorization": f"Bearer {token}"}
+        assert (await client.get("/v1/auth/verify", headers=headers)).status_code == 200
+
+    assert (await register(client, correo="otro@example.com")).status_code == 201
+    other_token = (await login(client, correo="otro@example.com")).json()["accessToken"]
+    response = await client.post(
+        "/v1/auth/reset-password", json={"codigo": raw_code, "nuevaPassword": "nuevaPassword123"}
+    )
+    assert response.status_code == 200
+    assert (await User.get(user.id)).token_version == initial_version + 1
+    for token in old_tokens:
+        headers = {"Authorization": f"Bearer {token}"}
+        for endpoint in ("/v1/auth/verify", "/v1/usuarios/perfil"):
+            assert (await client.get(endpoint, headers=headers)).status_code == 401
+
+    response = await login(client, password="nuevaPassword123")
+    assert response.status_code == 200
+    new_token = response.json()["accessToken"]
+    settings = get_settings()
+    payload = jwt.decode(new_token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+    assert payload["token_version"] == initial_version + 1
+    for token in (new_token, other_token):
+        headers = {"Authorization": f"Bearer {token}"}
+        assert (await client.get("/v1/usuarios/perfil", headers=headers)).status_code == 200
+
+
 @pytest.mark.parametrize("caso", ["desconocido", "expirado", "usado", "verificacion_email"])
 async def test_reset_password_rechaza_codigos_invalidos(client, password_reset, caso):
     raw_code, code = password_reset
+    token = (await login(client)).json()["accessToken"]
+    user = await User.find_one(User.correo_normalizado == "cliente@example.com")
     if caso == "desconocido":
         raw_code = "codigo-inexistente-123456"
     elif caso == "expirado":
@@ -254,6 +295,8 @@ async def test_reset_password_rechaza_codigos_invalidos(client, password_reset, 
         "/v1/auth/reset-password", json={"codigo": raw_code, "nuevaPassword": "nuevaPassword123"}
     )
     assert response.status_code == 400
+    assert (await User.get(user.id)).token_version == user.token_version
+    assert (await client.get("/v1/auth/verify", headers={"Authorization": f"Bearer {token}"})).status_code == 200
     assert (await VerificationCode.get(code.id)).used == code.used
     assert (await login(client)).status_code == 200
     assert (await login(client, password="nuevaPassword123")).status_code == 401
