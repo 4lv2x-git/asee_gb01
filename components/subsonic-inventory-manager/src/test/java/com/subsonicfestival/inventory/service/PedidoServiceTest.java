@@ -2,8 +2,10 @@ package com.subsonicfestival.inventory.service;
 
 import com.subsonicfestival.inventory.dto.*;
 import com.subsonicfestival.inventory.entity.*;
+import com.subsonicfestival.inventory.exception.ConflictException;
 import com.subsonicfestival.inventory.exception.ForbiddenException;
 import com.subsonicfestival.inventory.exception.InsufficientStockException;
+import com.subsonicfestival.inventory.exception.ResourceNotFoundException;
 import com.subsonicfestival.inventory.repository.PedidoRepository;
 import com.subsonicfestival.inventory.repository.ProductoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -106,5 +110,67 @@ class PedidoServiceTest {
 
         assertThrows(InsufficientStockException.class, () ->
                 pedidoService.crearPedido("usr-001", creacionDTO));
+    }
+
+    @Test
+    void testSolicitarCancelacionPedidoExitoso() {
+        EntradaAdquirida entrada = EntradaAdquirida.builder()
+                .id("ent-001")
+                .usuarioId("usr-001")
+                .productoId("prod-001")
+                .estado("VALIDA")
+                .build();
+
+        Pedido pedido = Pedido.builder()
+                .id("ped-001")
+                .usuarioId("usr-001")
+                .fechaCompra(LocalDateTime.now())
+                .importeTotal(40.0)
+                .estado("COMPLETADO")
+                .lineas(new ArrayList<>())
+                .entradas(new ArrayList<>(List.of(entrada)))
+                .build();
+        entrada.setPedido(pedido);
+
+        when(pedidoRepository.findById("ped-001")).thenReturn(Optional.of(pedido));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(i -> i.getArgument(0));
+
+        PedidoDTO resultado = pedidoService.solicitarCancelacionPedido("ped-001", "usr-001");
+
+        assertNotNull(resultado);
+        assertEquals("CANCELACION_SOLICITADA", resultado.getEstado());
+        assertEquals(1, resultado.getEntradas().size());
+        assertEquals("CANCELACION_SOLICITADA", resultado.getEntradas().get(0).getEstado());
+        verify(pedidoRepository).save(pedido);
+    }
+
+    @Test
+    void testSolicitarCancelacionPedidoNoPerteneceAUsuario() {
+        Pedido pedido = Pedido.builder()
+                .id("ped-001")
+                .usuarioId("usr-otro")
+                .estado("COMPLETADO")
+                .build();
+
+        when(pedidoRepository.findById("ped-001")).thenReturn(Optional.of(pedido));
+
+        assertThrows(ForbiddenException.class, () ->
+                pedidoService.solicitarCancelacionPedido("ped-001", "usr-001"));
+        verify(pedidoRepository, never()).save(any());
+    }
+
+    @Test
+    void testSolicitarCancelacionPedidoYaCancelado() {
+        Pedido pedido = Pedido.builder()
+                .id("ped-001")
+                .usuarioId("usr-001")
+                .estado("CANCELACION_SOLICITADA")
+                .build();
+
+        when(pedidoRepository.findById("ped-001")).thenReturn(Optional.of(pedido));
+
+        assertThrows(ConflictException.class, () ->
+                pedidoService.solicitarCancelacionPedido("ped-001", "usr-001"));
+        verify(pedidoRepository, never()).save(any());
     }
 }
