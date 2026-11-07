@@ -24,19 +24,20 @@ de entorno también están descritas en `.env.example`. Los endpoints
 administrativos y de uso interno requieren `JWT_SECRET` y un token con el rol
 correspondiente.
 
-## Ejecutar con Docker
+## Ejecutar con Docker Compose
 
-Construye la imagen desde esta carpeta:
+Desde esta carpeta, inicia la API y su MongoDB:
 
-```powershell
-docker build -t artists-blog .
+```text
+docker compose up --build --detach
 ```
 
-Ejecuta el servicio, configurando `MONGODB_URL` con una dirección de MongoDB
-accesible desde el contenedor:
+MongoDB queda disponible en `localhost:27018` y la API en
+<http://localhost:8000/docs>. Para detener los contenedores sin borrar los
+datos:
 
-```powershell
-docker run --rm -p 8000:8000 -e MONGODB_URL="mongodb://host.docker.internal:27017" -e MONGODB_DATABASE="subsonic_festival" artists-blog
+```text
+docker compose down
 ```
 
 ## Pruebas
