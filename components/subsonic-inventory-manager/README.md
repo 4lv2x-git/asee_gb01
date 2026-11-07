@@ -45,7 +45,7 @@ docker run --name postgres-inventory -e POSTGRES_USER=postgres -e POSTGRES_PASSW
 Desde la raíz del repositorio (`asee_gb01`), entra al directorio del componente:
 
 ```bash
-cd components/inventory_manager
+cd components/subsonic-inventory-manager
 ```
 
 ### 3. Compilar y Ejecutar la Aplicación
@@ -74,14 +74,18 @@ Una vez arrancado el servidor en el puerto **8081**, abre tu navegador web y acc
 Desde esta interfaz podrás interactuar y validar todos los endpoints descritos en el contrato OpenAPI:
 
 ### 1. Inventario (`/inventario/productos`)
+* **`POST /inventario/productos`**: Registrar un nuevo producto en el catálogo asignando identificador único en el backend.
 * **`GET /inventario/productos`**: Consultar catálogo de productos con filtros opcionales (`tipo`, `disponible`).
 * **`GET /inventario/productos/{producto_id}`**: Consultar detalle y stock de un producto específico.
+* **`PATCH /inventario/productos/{producto_id}`**: Actualizar parcialmente los datos descriptivos o comerciales del producto (nombre, descripción, precio, tipo).
+* **`DELETE /inventario/productos/{producto_id}`**: Eliminar un producto del catálogo garantizando la integridad de pedidos existentes.
 * **`PATCH /inventario/productos/{producto_id}/stock`**: Modificar la cantidad total de stock disponible.
 
 ### 2. Pedidos (`/pedidos`)
 * **`POST /pedidos`**: Crear un pedido a partir de las líneas seleccionadas por el cliente, validando roles, existencias y reduciendo el stock de manera atómica.
 * **`GET /pedidos`**: Consultar el historial de pedidos asociados al cliente autenticado.
 * **`GET /pedidos/{pedido_id}`**: Consultar el detalle de un pedido propio del usuario.
+* **`POST /pedidos/{pedido_id}/cancelacion`**: Solicitar la cancelación de un pedido propio y de sus entradas asociadas.
 
 ### 3. Entradas y Cancelaciones (`/entradas`)
 * **`GET /entradas/{entrada_id}`**: Consultar los datos de una entrada o pase adquirido.
@@ -116,6 +120,8 @@ components/inventory_manager/
     │   │   │   └── InternoController.java      # Endpoints de comunicación entre microservicios
     │   │   ├── dto/
     │   │   │   ├── ProductoDTO.java            # Transferencia de datos de producto
+    │   │   │   ├── ProductoCreacionDTO.java    # Solicitud de creación de producto
+    │   │   │   ├── ProductoActualizacionDTO.java # Solicitud de actualización de datos de producto
     │   │   │   ├── StockActualizacionDTO.java  # Solicitud de actualización de stock
     │   │   │   ├── LineaPedidoCreacionDTO.java # Entrada de línea de pedido
     │   │   │   ├── PedidoCreacionDTO.java      # Solicitud de creación de pedido

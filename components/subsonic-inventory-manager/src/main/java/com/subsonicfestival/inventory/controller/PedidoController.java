@@ -52,7 +52,7 @@ public class PedidoController {
         return ResponseEntity.ok(pedidos);
     }
 
-    //GET /pedidos {pedido_id}
+    //GET /pedidos/{pedido_id}
     @GetMapping("/{pedido_id}")
     @Operation(summary = "Consultar el detalle de un pedido propio",
             description = "Devuelve un pedido concreto del cliente autenticado.")
@@ -62,6 +62,19 @@ public class PedidoController {
             HttpServletRequest request) {
         String usuarioId = userContextHelper.obtenerUsuarioOpcional(request, "usr-cliente-001");
         PedidoDTO pedido = pedidoService.obtenerPedidoPorId(pedidoId, usuarioId);
+        return ResponseEntity.ok(pedido);
+    }
+
+    //POST /pedidos/{pedido_id}/cancelacion
+    @PostMapping("/{pedido_id}/cancelacion")
+    @Operation(summary = "Solicitar la cancelación de un pedido",
+            description = "Registra una solicitud de cancelación para un pedido del cliente autenticado.")
+    public ResponseEntity<PedidoDTO> solicitarCancelacionPedido(
+            @Parameter(description = "Identificador único del pedido", required = true)
+            @PathVariable("pedido_id") String pedidoId,
+            HttpServletRequest request) {
+        String usuarioId = userContextHelper.obtenerUsuarioOpcional(request, "usr-cliente-001");
+        PedidoDTO pedido = pedidoService.solicitarCancelacionPedido(pedidoId, usuarioId);
         return ResponseEntity.ok(pedido);
     }
 }

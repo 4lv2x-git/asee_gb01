@@ -7,7 +7,7 @@ info:
     El gestor comprueba la identidad y el rol del comprador mediante el Gestor de
     Usuarios e Identificación y valida la existencia del festival y del pase mediante
     el Gestor de Eventos cuando una compra lo requiere. También mantiene el stock,
-    el historial de pedidos y las solicitudes de cancelación de entradas.
+    el historial de pedidos y las solicitudes de cancelación de pedidos y entradas.
   version: 3.0.0
 servers:
   - url: https://api.subsonicfestival.com/v1
@@ -20,7 +20,7 @@ tags:
   - name: Inventario
     description: Consulta y mantenimiento del catálogo de productos y su stock
   - name: Pedidos
-    description: Creación y consulta de pedidos asociados al cliente autenticado
+    description: Creación, consulta y solicitud de cancelación de pedidos asociados al cliente autenticado
   - name: Entradas
     description: Gestión de entradas o pases adquiridos y solicitudes de cancelación
   - name: Uso Interno
@@ -31,6 +31,52 @@ paths:
   # INVENTARIO
   # ==========================================
   /inventario/productos:
+    post:
+      tags: [Inventario]
+      summary: Crear un producto
+      description: >
+        Registra un nuevo producto en el catálogo del inventario.
+        Lógica: validar los datos recibidos, asignar un identificador único al producto
+        y guardar su información y stock inicial. El identificador se genera en el
+        backend y no debe enviarse en la petición.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductoCreacion'
+      responses:
+        '201':
+          description: Producto creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '400':
+          description: Datos del producto no válidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: El usuario autenticado no tiene permisos para gestionar el catálogo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflicto al crear el producto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
     get:
       tags: [Inventario]
       summary: Consultar productos y stock disponible
@@ -95,6 +141,109 @@ paths:
                 $ref: '#/components/schemas/Producto'
         '404':
           description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags: [Inventario]
+      summary: Actualizar los datos de un producto
+      description: >
+        Modifica uno o varios datos descriptivos o comerciales de un producto.
+        El stock no se modifica mediante esta operación, ya que dispone de un endpoint
+        específico (/inventario/productos/{producto_id}/stock).
+        Lógica: localizar el producto, validar los campos enviados y persistir los
+        cambios indicados sin alterar los campos omitidos.
+      parameters:
+        - name: producto_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único del producto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductoActualizacion'
+      responses:
+        '200':
+          description: Datos del producto actualizados correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '400':
+          description: Datos de actualización no válidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: El usuario autenticado no tiene permisos para gestionar el catálogo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflicto al actualizar los datos del producto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Inventario]
+      summary: Eliminar un producto
+      description: >
+        Elimina un producto del catálogo.
+        Lógica: localizar el producto y comprobar que su eliminación no compromete
+        la integridad del historial de pedidos. Si el producto está asociado a pedidos
+        que deban conservarse, la operación se rechaza; en caso contrario, se elimina.
+      parameters:
+        - name: producto_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único del producto.
+      responses:
+        '204':
+          description: Producto eliminado correctamente
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: El usuario autenticado no tiene permisos para gestionar el catálogo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: El producto está asociado a pedidos y no se puede eliminar
           content:
             application/json:
               schema:
@@ -274,6 +423,56 @@ paths:
                 $ref: '#/components/schemas/Error'
         '404':
           description: Pedido no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /pedidos/{pedido_id}/cancelacion:
+    post:
+      tags: [Pedidos]
+      summary: Solicitar la cancelación de un pedido
+      description: >
+        Registra una solicitud de cancelación para un pedido del cliente autenticado.
+        Lógica: comprobar que el pedido existe, que pertenece al usuario de la sesión
+        y que su estado permite solicitar la cancelación; actualizar el estado del
+        pedido y, cuando existan, el de las entradas o pases asociados para dejar
+        constancia de la solicitud. Esta operación no realiza una devolución económica
+        automática ni define la reposición del stock.
+      parameters:
+        - name: pedido_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identificador único del pedido.
+      responses:
+        '200':
+          description: Solicitud de cancelación registrada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pedido'
+        '401':
+          description: Token no recibido o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: El pedido no pertenece al usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Pedido no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: El pedido no puede volver a solicitar su cancelación
           content:
             application/json:
               schema:
@@ -477,6 +676,55 @@ components:
           type: integer
           minimum: 0
           description: Unidades disponibles para la venta.
+
+    ProductoCreacion:
+      type: object
+      required: [nombre, precio, tipo, stockDisponible]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          description: Nombre comercial del producto.
+        descripcion:
+          type: string
+          description: Descripción del producto.
+        precio:
+          type: number
+          format: float
+          minimum: 0
+          description: Precio unitario del producto.
+        tipo:
+          type: string
+          enum: [entrada, pase, merchandising]
+          description: Tipo de producto gestionado por el componente.
+        stockDisponible:
+          type: integer
+          minimum: 0
+          description: Stock inicial disponible para la venta.
+
+    ProductoActualizacion:
+      type: object
+      minProperties: 1
+      description: >
+        Campos modificables de un producto. Solo deben enviarse los atributos que
+        se quieran cambiar. El stock se actualiza mediante StockActualizacion.
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          description: Nuevo nombre comercial del producto.
+        descripcion:
+          type: string
+          description: Nueva descripción del producto.
+        precio:
+          type: number
+          format: float
+          minimum: 0
+          description: Nuevo precio unitario del producto.
+        tipo:
+          type: string
+          enum: [entrada, pase, merchandising]
+          description: Nuevo tipo de producto.
 
     StockActualizacion:
       type: object

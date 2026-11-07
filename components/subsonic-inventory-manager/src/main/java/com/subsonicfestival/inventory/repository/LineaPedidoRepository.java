@@ -10,4 +10,6 @@ import java.util.List;
 public interface LineaPedidoRepository extends JpaRepository<LineaPedido, Long> {
 
     List<LineaPedido> findByPedidoId(String pedidoId);
+
+    boolean existsByProductoId(String productoId);
 }

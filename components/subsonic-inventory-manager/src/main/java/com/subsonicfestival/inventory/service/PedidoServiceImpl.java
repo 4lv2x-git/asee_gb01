@@ -2,6 +2,7 @@ package com.subsonicfestival.inventory.service;
 
 import com.subsonicfestival.inventory.dto.*;
 import com.subsonicfestival.inventory.entity.*;
+import com.subsonicfestival.inventory.exception.ConflictException;
 import com.subsonicfestival.inventory.exception.ForbiddenException;
 import com.subsonicfestival.inventory.exception.InsufficientStockException;
 import com.subsonicfestival.inventory.exception.ResourceNotFoundException;
@@ -145,6 +146,34 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         return mapToDTO(pedido);
+    }
+
+    @Override
+    @Transactional
+    public PedidoDTO solicitarCancelacionPedido(String pedidoId, String usuarioId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new ResourceNotFoundException("PEDIDO_NO_ENCONTRADO", "Pedido no encontrado: " + pedidoId));
+
+        if (!pedido.getUsuarioId().equals(usuarioId)) {
+            throw new ForbiddenException("PEDIDO_NO_PERMANECE_A_USUARIO", "El pedido no pertenece al usuario autenticado");
+        }
+
+        if ("CANCELACION_SOLICITADA".equalsIgnoreCase(pedido.getEstado()) || "CANCELADO".equalsIgnoreCase(pedido.getEstado())) {
+            throw new ConflictException("CANCELACION_YA_SOLICITADA", "El pedido no puede volver a solicitar su cancelación");
+        }
+
+        pedido.setEstado("CANCELACION_SOLICITADA");
+
+        if (pedido.getEntradas() != null) {
+            for (EntradaAdquirida entrada : pedido.getEntradas()) {
+                if (!"CANCELADA".equalsIgnoreCase(entrada.getEstado())) {
+                    entrada.setEstado("CANCELACION_SOLICITADA");
+                }
+            }
+        }
+
+        Pedido guardado = pedidoRepository.save(pedido);
+        return mapToDTO(guardado);
     }
 
     private PedidoDTO mapToDTO(Pedido p) {

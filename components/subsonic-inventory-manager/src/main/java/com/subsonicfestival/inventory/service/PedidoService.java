@@ -12,4 +12,6 @@ public interface PedidoService {
     List<PedidoDTO> listarPedidosUsuario(String usuarioId);
 
     PedidoDTO obtenerPedidoPorId(String pedidoId, String usuarioId);
+
+    PedidoDTO solicitarCancelacionPedido(String pedidoId, String usuarioId);
 }
