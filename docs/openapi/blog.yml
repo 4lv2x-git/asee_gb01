@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: Blog - Subsonic Festival
+  description: Consulta pública de las publicaciones del festival.
+  version: 1.0.0
+servers:
+  - url: https://api.subsonicfestival.com/v1
+    description: API Gateway
+tags:
+  - name: Blog
+    description: Consulta de artículos publicados
+paths:
+  /blog:
+    get:
+      tags: [Blog]
+      summary: Listar artículos
+      description: Devuelve los artículos ordenados del más reciente al más antiguo.
+      parameters:
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Lista paginada de artículos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArticuloResumen'
+  /blog/{articulo_id}:
+    get:
+      tags: [Blog]
+      summary: Consultar artículo
+      parameters:
+        - name: articulo_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artículo completo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticuloDetalle'
+        '404':
+          description: Artículo no encontrado
+components:
+  schemas:
+    ArticuloResumen:
+      type: object
+      required: [id, titulo, resumen, autor, fechaPublicacion]
+      properties:
+        id:
+          type: string
+        titulo:
+          type: string
+        resumen:
+          type: string
+        imagen:
+          type: string
+          format: uri
+        autor:
+          type: string
+        fechaPublicacion:
+          type: string
+          format: date-time
+    ArticuloDetalle:
+      allOf:
+        - $ref: '#/components/schemas/ArticuloResumen'
+        - type: object
+          required: [contenido]
+          properties:
+            contenido:
+              type: string

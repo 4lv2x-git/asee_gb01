@@ -1,4 +1,12 @@
 # asee_gb01
+
+## Componentes
+
+- [Artists & Blog](components/service-artists-blog/README.md): microservicio
+  Python/FastAPI con MongoDB, contratos OpenAPI y pruebas.
+- [Festivals Service](components/service-festivals/README.md): microservicio
+  Python/FastAPI con PostgreSQL.
+
 **Miembros del grupo:**
 - Jaime Arias Rodríguez
 - Manuel Carvajal Tarifa
