@@ -16,3 +16,6 @@ __pycache__/
 # Sistema operativo
 Thumbs.db
 .DS_Store
+
+# Builds de Java / Maven
+target/
