@@ -1,19 +1,22 @@
 # Subsonic Festival — Frontend
 
-Interfaz web de **Subsonic Festival 2027**, construida con HTML, CSS y JavaScript
-vanilla y servida por una aplicación de **Spring Boot**.
-
-Incluye la página principal, el área de acceso y perfil de usuario y el panel de
-administración para la gestión de usuarios.
+Interfaz web de **Subsonic Festival 2027**, construida con **Spring Boot**, **Spring MVC**
+y **Thymeleaf**. La página principal se sirve como HTML estático con su hoja de estilos
+y `site.js`; el área de acceso, el perfil y el panel de administración se renderizan en
+el servidor.
 
 ## Páginas
 
-| Página | Descripción |
+| Ruta | Descripción |
 | --- | --- |
-| `/index.html` | Página principal del festival. |
-| `/login.html` | Inicio de sesión, registro de clientes y proveedores, recuperación de contraseña y verificación de correo. |
-| `/perfil.html` | Perfil del usuario autenticado: datos personales, datos de proveedor, verificación de correo y baja de cuenta. |
-| `/admin.html` | Panel de administración. En esta entrega solo incluye la **gestión de usuarios**; eventos, inventario y artistas se incorporarán más adelante. |
+| `/` o `/index.html` | Página principal del festival (HTML estático). |
+| `/login` | Inicio de sesión, registro de clientes y proveedores y recuperación de contraseña. |
+| `/perfil` | Perfil del usuario autenticado: datos personales, datos de proveedor, verificación de correo y baja de cuenta. |
+| `/admin` | Panel de administración. En esta entrega solo incluye la **gestión de usuarios**; eventos, inventario y artistas se incorporarán más adelante. |
+| `/cuenta` | Redirección usada por el enlace «Acceso» de la portada: lleva al perfil, al panel de administración o al formulario de acceso según la sesión. |
+
+Las antiguas rutas `/login.html`, `/perfil.html` y `/admin.html` siguen funcionando y
+redirigen a las rutas limpias.
 
 ## Estructura
 
@@ -23,25 +26,38 @@ frontend/
 ├── README.md
 └── src/main/
     ├── java/com/subsonicfestival/frontend/
-    │   ├── FrontendApplication.java          # Punto de entrada de Spring Boot
-    │   └── UsersAuthProxyController.java     # Proxy same-origin hacia subsonic-users-auth
+    │   ├── FrontendApplication.java              # Punto de entrada de Spring Boot
+    │   └── web/
+    │       ├── AuthController.java               # /login, /registro, /recuperar, /restablecer, /logout
+    │       ├── PerfilController.java             # /perfil y acciones del área personal
+    │       ├── AdminController.java              # /admin y gestión de usuarios
+    │       ├── UsuariosAuthClient.java           # Cliente Java de subsonic-users-auth
+    │       ├── UsuariosAuthException.java        # Errores normalizados de la API
+    │       ├── Sesion.java                       # Token y usuario en la HttpSession
+    │       ├── SesionInterceptor.java            # Protección de /perfil y /admin
+    │       ├── WebConfig.java                    # Registro del interceptor
+    │       ├── ModeloGlobal.java                 # Usuario e iniciales en todas las plantillas
+    │       ├── Textos.java                       # Etiquetas de rol, estado e iniciales
+    │       ├── dto/                              # Usuario, TokenResponse
+    │       └── form/                             # Formularios con validación Bean Validation
     └── resources/
         ├── application.properties
+        ├── templates/
+        │   ├── login.html
+        │   ├── perfil.html
+        │   ├── admin.html
+        │   ├── admin-editar.html
+        │   ├── admin-password.html
+        │   ├── confirmar-eliminar.html
+        │   └── fragments/
+        │       └── comun.html                    # Cabeceras, pie y alertas compartidas
         └── static/
             ├── index.html
-            ├── login.html
-            ├── perfil.html
-            ├── admin.html
             ├── css/
-            │   ├── styles.css                # Estilos de la página principal
-            │   └── account.css               # Acceso, perfil y administración
+            │   ├── styles.css                    # Estilos de la página principal
+            │   └── account.css                   # Acceso, perfil y administración
             └── js/
-                ├── api.js                    # Cliente de la API y gestión de sesión
-                ├── ui.js                     # Alertas, formularios y diálogos
-                ├── auth.js                   # Lógica de login.html
-                ├── perfil.js                 # Lógica de perfil.html
-                ├── admin.js                  # Lógica de admin.html
-                └── site.js                   # Enlace de acceso dinámico en la portada
+                └── site.js                       # Reservado para mejoras de la portada
 ```
 
 ## Requisitos
@@ -92,14 +108,10 @@ java -jar target/subsonic-frontend-1.0.0.jar
 
 ## Conexión con la API de usuarios
 
-Las páginas llaman a `/api/users-auth/**`, un proxy same-origin implementado en
-`UsersAuthProxyController`. Spring Boot reenvía esas peticiones a
-`http://localhost:8000` (la raíz del microservicio, que expone los endpoints bajo
-`/v1`). De este modo:
-
-- No es necesario añadir `http://localhost:8080` a `CORS_ORIGINS` en
-  `subsonic-users-auth`.
-- El navegador nunca guarda ni envía la URL interna del servicio de usuarios.
+Todas las llamadas a `subsonic-users-auth` se hacen desde Java con
+`UsuariosAuthClient` (`RestClient`). El navegador nunca habla directamente con la
+API de usuarios ni recibe el JWT, por lo que no hace falta configurar CORS en el
+microservicio.
 
 La URL de destino se puede cambiar con la variable de entorno
 `USERS_AUTH_API_URL` o con la propiedad
@@ -111,25 +123,43 @@ USERS_AUTH_API_URL=http://localhost:8000 mvn spring-boot:run
 
 El valor debe ser la **raíz** del servicio, no la ruta `/v1`.
 
+## Sesión y seguridad
+
+- Tras un inicio de sesión correcto, el JWT se guarda en la `HttpSession` del
+  servidor. El navegador solo recibe la cookie `JSESSIONID` (marcada como
+  `HttpOnly` por defecto), nunca el token.
+- `SesionInterceptor` protege `/perfil/**` y `/admin/**`. Si no hay sesión activa
+  o el token ha caducado, redirige a `/login?motivo=caducada`; si la ruta es de
+  administración y el rol no es `admin`, redirige a `/perfil?denegado=1`.
+- La sesión del servidor caduca a los 60 minutos (`server.servlet.session.timeout`),
+  igual que el JWT emitido por el microservicio.
+- Al cerrar sesión se llama a `POST /v1/auth/logout` para revocar el token y se
+  invalida la `HttpSession`.
+- El formulario de acceso y los formularios de cuenta usan validación de servidor
+  con Bean Validation; los errores se muestran junto a cada campo.
+- Un administrador no puede suspender, cambiar la contraseña ni eliminar su propia
+  cuenta desde el panel.
+
 ## Flujos implementados
 
 ### Autenticación
 
-- `POST /v1/auth/login`: guarda el JWT en `localStorage` y redirige al panel
-  correspondiente según el rol (`admin` o usuario).
+- `POST /v1/auth/login`: el servidor guarda el JWT en la sesión y redirige al
+  panel correspondiente según el rol (`admin` o usuario).
 - `POST /v1/auth/register`: permite registrarse como **cliente** o
   **proveedor** (con `tipoServicio` obligatorio para proveedores).
 - `POST /v1/auth/forgot-password` y `POST /v1/auth/reset-password`: recuperación
   mediante código de un solo uso.
 - `POST /v1/auth/verify-email`: verificación del correo desde el perfil.
-- `POST /v1/auth/logout`: revoca el token actual y limpia la sesión local.
+- `POST /v1/auth/logout`: revoca el token actual e invalida la sesión.
 
 ### Perfil
 
 - `GET /v1/usuarios/perfil`: carga los datos actuales.
 - `PATCH /v1/usuarios/perfil`: edita nombre, dirección y, en proveedores,
   `tipoServicio` y `descripcionServicio`.
-- `DELETE /v1/usuarios/perfil`: elimina la cuenta con confirmación previa.
+- `DELETE /v1/usuarios/perfil`: elimina la cuenta tras confirmar en una página
+  dedicada.
 
 ### Administración (solo usuarios)
 
@@ -140,15 +170,15 @@ El valor debe ser la **raíz** del servicio, no la ruta `/v1`.
   usuario.
 - `DELETE /v1/usuarios/admin/{id}`: eliminar una cuenta.
 
-El panel de administración solo es accesible para usuarios con rol `admin`.
-Un administrador no puede suspender ni eliminar su propia cuenta desde la
-interfaz.
+La búsqueda y los filtros por rol y estado del panel se aplican en el servidor
+sobre el listado devuelto por la API. Las acciones de edición, cambio de
+contraseña y eliminación tienen páginas propias renderizadas con Thymeleaf.
 
 ## Notas
 
-- La sesión se guarda en `localStorage`; si el token caduca o el usuario es
-  suspendido, las páginas redirigen al acceso.
-- Las páginas de cuenta necesitan que el frontend se sirva con Spring Boot: si
-  se abren directamente como archivo (`file://`), los módulos JavaScript no
-  pueden cargarse y no hay proxy hacia la API.
-- La página principal (`index.html`) sigue funcionando sin backend.
+- La página principal (`index.html`) sigue funcionando sin backend; el enlace
+  «Acceso» apunta a `/cuenta`, que necesita el frontend arrancado con Spring Boot.
+- Los estilos de las páginas de cuenta reutilizan las variables y componentes de
+  `css/styles.css` desde `css/account.css`.
+- En desarrollo, `spring.thymeleaf.cache=false` permite ver los cambios de las
+  plantillas sin reiniciar el servidor.

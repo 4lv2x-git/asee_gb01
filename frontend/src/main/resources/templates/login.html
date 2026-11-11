@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Acceso · Subsonic Festival 2027', 'Accede a tu cuenta de Subsonic Festival 2027: inicia sesión, crea tu cuenta de cliente o proveedor y recupera tu contraseña.')}"></head>
+<body class="auth-page">
+<a class="skip-link" href="#auth-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraPublica}"></header>
+
+<main id="auth-main" class="auth-main">
+    <div class="container auth-layout">
+        <section class="auth-intro" aria-labelledby="auth-title">
+            <p class="eyebrow"><span class="eyebrow__dot"></span> Área de usuario</p>
+            <h1 id="auth-title">Tu sitio.<br><span class="text-outline">Tu ruido.</span></h1>
+            <p>
+                Entra en tu cuenta para gestionar tus datos, verificar tu correo y acceder a las
+                herramientas de cliente o proveedor del festival.
+            </p>
+
+            <ul class="auth-benefits">
+                <li><strong>01</strong><span>Compra y gestiona tus abonos con una sola cuenta.</span></li>
+                <li><strong>02</strong><span>Los proveedores pueden mantener sus datos de servicio al día.</span></li>
+                <li><strong>03</strong><span>El equipo de administración modera y da soporte a todas las cuentas.</span></li>
+            </ul>
+        </section>
+
+        <section class="auth-panel" aria-label="Acceso y registro">
+            <div class="active-session" th:if="${sesionActiva != null}">
+                <div class="active-session__copy">
+                    <span class="active-session__dot" aria-hidden="true"></span>
+                    <p>
+                        Sesión iniciada como <strong th:text="${sesionActiva.nombre}">tu cuenta</strong>.
+                        Puedes continuar o entrar con otra cuenta.
+                    </p>
+                </div>
+                <div class="active-session__actions">
+                    <a class="btn btn--ghost btn--small" th:if="${sesionActiva.rol == 'admin'}" th:href="@{/admin}">Continuar</a>
+                    <a class="btn btn--ghost btn--small" th:unless="${sesionActiva.rol == 'admin'}" th:href="@{/perfil}">Continuar</a>
+                    <form th:action="@{/logout}" method="post">
+                        <button class="btn btn--ghost btn--small" type="submit">Cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/comun :: alertas}"></div>
+
+            <nav class="tabs" aria-label="Iniciar sesión o crear cuenta">
+                <a class="tab"
+                   th:href="@{/login}"
+                   th:classappend="${vista == 'registro' ? '' : 'is-active'}"
+                   th:attr="aria-current=${vista == 'registro' ? null : 'page'}">Entrar</a>
+                <a class="tab"
+                   th:href="@{/login(vista='registro')}"
+                   th:classappend="${vista == 'registro' ? 'is-active' : ''}"
+                   th:attr="aria-current=${vista == 'registro' ? 'page' : null}">Crear cuenta</a>
+            </nav>
+
+            <section class="tab-panel" th:if="${vista == 'login'}" aria-labelledby="login-title">
+                <header class="panel-head">
+                    <h2 id="login-title">Iniciar sesión</h2>
+                    <p>Introduce las credenciales con las que te registraste.</p>
+                </header>
+
+                <form class="form" th:action="@{/login}" th:object="${loginForm}" method="post" novalidate>
+                    <input type="hidden" th:field="*{next}">
+
+                    <div class="field">
+                        <label for="login-email">Correo electrónico</label>
+                        <input id="login-email" type="email" th:field="*{correo}"
+                               th:errorclass="is-invalid" placeholder="tu@email.com" autocomplete="email" required>
+                        <p class="field__error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}">Introduce un correo válido.</p>
+                    </div>
+
+                    <div class="field">
+                        <div class="field__label-row">
+                            <label for="login-password">Contraseña</label>
+                            <a class="link-button" th:href="@{/login(vista='recuperar')}">¿La has olvidado?</a>
+                        </div>
+                        <input id="login-password" type="password" th:field="*{password}"
+                               th:errorclass="is-invalid" placeholder="Tu contraseña" autocomplete="current-password" required>
+                        <p class="field__error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Introduce tu contraseña.</p>
+                    </div>
+
+                    <button class="btn btn--primary btn--full" type="submit">Entrar</button>
+                </form>
+
+                <p class="panel-foot">
+                    ¿Aún no tienes cuenta?
+                    <a class="link-button" th:href="@{/login(vista='registro')}">Crear una cuenta</a>
+                </p>
+            </section>
+
+            <section class="tab-panel" th:if="${vista == 'registro'}" aria-labelledby="register-title">
+                <header class="panel-head">
+                    <h2 id="register-title">Crear cuenta</h2>
+                    <p>Regístrate como cliente o como proveedor de servicios del festival.</p>
+                </header>
+
+                <form class="form" th:action="@{/registro}" th:object="${registroForm}" method="post" novalidate>
+                    <div class="form-grid">
+                        <div class="field form-grid__full">
+                            <label for="register-name">Nombre completo</label>
+                            <input id="register-name" type="text" th:field="*{nombre}"
+                                   th:errorclass="is-invalid" placeholder="Tu nombre" autocomplete="name" required>
+                            <p class="field__error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">Introduce tu nombre.</p>
+                        </div>
+
+                        <div class="field form-grid__full">
+                            <label for="register-email">Correo electrónico</label>
+                            <input id="register-email" type="email" th:field="*{correo}"
+                                   th:errorclass="is-invalid" placeholder="tu@email.com" autocomplete="email" required>
+                            <p class="field__error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}">Introduce un correo válido.</p>
+                        </div>
+
+                        <div class="field">
+                            <label for="register-password">Contraseña</label>
+                            <input id="register-password" type="password" th:field="*{password}"
+                                   th:errorclass="is-invalid" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                            <p class="field__hint">Mínimo 8 caracteres.</p>
+                            <p class="field__error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">La contraseña debe tener al menos 8 caracteres.</p>
+                        </div>
+
+                        <div class="field">
+                            <label for="register-password-confirm">Repite la contraseña</label>
+                            <input id="register-password-confirm" type="password" th:field="*{passwordConfirm}"
+                                   th:errorclass="is-invalid" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                            <p class="field__error" th:if="${#fields.hasErrors('passwordConfirm')}" th:errors="*{passwordConfirm}">Repite la contraseña.</p>
+                        </div>
+                    </div>
+
+                    <div class="role-block">
+                        <fieldset class="role-choice">
+                            <legend>Tipo de cuenta</legend>
+                            <label class="role-card">
+                                <input type="radio" th:field="*{rol}" value="cliente">
+                                <span class="role-card__copy">
+                                    <strong>Cliente</strong>
+                                    <small>Quiero comprar entradas y participar en la comunidad.</small>
+                                </span>
+                            </label>
+                            <label class="role-card">
+                                <input type="radio" th:field="*{rol}" value="proveedor">
+                                <span class="role-card__copy">
+                                    <strong>Proveedor</strong>
+                                    <small>Quiero ofrecer comida, bebida, merchandising u otros servicios.</small>
+                                </span>
+                            </label>
+                        </fieldset>
+
+                        <div class="provider-fields">
+                            <div class="form-grid">
+                                <div class="field form-grid__full">
+                                    <label for="register-service">Tipo de servicio</label>
+                                    <input id="register-service" type="text" th:field="*{tipoServicio}"
+                                           th:errorclass="is-invalid" list="service-types"
+                                           placeholder="Ej. comida, sonido, merchandising" autocomplete="off">
+                                    <datalist id="service-types">
+                                        <option value="comida"></option>
+                                        <option value="bebida"></option>
+                                        <option value="merchandising"></option>
+                                        <option value="sonido"></option>
+                                        <option value="iluminación"></option>
+                                        <option value="otro"></option>
+                                    </datalist>
+                                    <p class="field__error" th:if="${#fields.hasErrors('tipoServicio')}" th:errors="*{tipoServicio}">Indica el tipo de servicio.</p>
+                                </div>
+
+                                <div class="field form-grid__full">
+                                    <label for="register-description">Descripción del servicio <span class="muted">(opcional)</span></label>
+                                    <textarea id="register-description" th:field="*{descripcionServicio}" rows="3"
+                                              placeholder="Cuéntanos qué ofreces y qué necesitas para montarlo."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="form-note">
+                        Al crear una cuenta aceptas las condiciones del festival y el tratamiento de tus
+                        datos para la gestión de la cuenta.
+                    </p>
+
+                    <button class="btn btn--primary btn--full" type="submit">Crear mi cuenta</button>
+                </form>
+
+                <p class="panel-foot">
+                    ¿Ya tienes cuenta?
+                    <a class="link-button" th:href="@{/login}">Iniciar sesión</a>
+                </p>
+            </section>
+
+            <section class="tab-panel" th:if="${vista == 'recuperar'}" aria-labelledby="recovery-title">
+                <header class="panel-head">
+                    <h2 id="recovery-title">Recuperar acceso</h2>
+                    <p>
+                        Solicita un código de recuperación y úsalo para establecer una nueva contraseña.
+                        El código caduca a los 15 minutos y solo puede utilizarse una vez.
+                    </p>
+                </header>
+
+                <form class="form" th:action="@{/recuperar}" th:object="${recuperacionForm}" method="post" novalidate>
+                    <div class="field">
+                        <label for="forgot-email">Correo electrónico</label>
+                        <input id="forgot-email" type="email" th:field="*{correo}"
+                               th:errorclass="is-invalid" placeholder="tu@email.com" autocomplete="email" required>
+                        <p class="field__error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}">Introduce un correo válido.</p>
+                    </div>
+                    <button class="btn btn--ghost btn--full" type="submit">Solicitar código</button>
+                </form>
+
+                <hr class="form-divider">
+
+                <form class="form" th:action="@{/restablecer}" th:object="${restablecimientoForm}" method="post" novalidate>
+                    <div class="field">
+                        <label for="reset-code">Código de recuperación</label>
+                        <input id="reset-code" type="text" th:field="*{codigo}"
+                               th:errorclass="is-invalid" placeholder="Pega el código recibido" autocomplete="one-time-code" minlength="16" required>
+                        <p class="field__hint">Es el código generado al solicitar la recuperación.</p>
+                        <p class="field__error" th:if="${#fields.hasErrors('codigo')}" th:errors="*{codigo}">El código no es válido.</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="reset-password">Nueva contraseña</label>
+                            <input id="reset-password" type="password" th:field="*{nuevaPassword}"
+                                   th:errorclass="is-invalid" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                            <p class="field__error" th:if="${#fields.hasErrors('nuevaPassword')}" th:errors="*{nuevaPassword}">La nueva contraseña debe tener al menos 8 caracteres.</p>
+                        </div>
+
+                        <div class="field">
+                            <label for="reset-password-confirm">Repite la contraseña</label>
+                            <input id="reset-password-confirm" type="password" th:field="*{nuevaPasswordConfirm}"
+                                   th:errorclass="is-invalid" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                            <p class="field__error" th:if="${#fields.hasErrors('nuevaPasswordConfirm')}" th:errors="*{nuevaPasswordConfirm}">Repite la nueva contraseña.</p>
+                        </div>
+                    </div>
+
+                    <button class="btn btn--primary btn--full" type="submit">Cambiar contraseña</button>
+                </form>
+
+                <p class="panel-foot">
+                    <a class="link-button" th:href="@{/login}">Volver a iniciar sesión</a>
+                </p>
+            </section>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

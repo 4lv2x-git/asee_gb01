@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Panel de administración · Subsonic Festival 2027', 'Panel de administración de Subsonic Festival 2027. Gestión de usuarios.')}"></head>
+<body>
+<a class="skip-link" href="#admin-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraCuenta('admin')}"></header>
+
+<main class="app-main" id="admin-main">
+    <div class="container">
+        <div th:replace="~{fragments/comun :: alertas}"></div>
+
+        <header class="page-head">
+            <div>
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Administración</p>
+                <h1>Panel de control</h1>
+                <p>
+                    Modera las cuentas del festival, revisa su estado y da soporte a clientes y
+                    proveedores. El resto de módulos se incorporará en futuras entregas.
+                </p>
+            </div>
+            <div class="page-head__actions">
+                <a class="btn btn--ghost btn--small" th:href="@{/admin}">Actualizar</a>
+            </div>
+        </header>
+
+        <section class="stat-grid" aria-label="Resumen de usuarios">
+            <article class="stat-card stat-card--lime">
+                <span class="stat-card__label">Usuarios totales</span>
+                <strong th:text="${total}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Clientes</span>
+                <strong th:text="${clientes}">0</strong>
+            </article>
+            <article class="stat-card stat-card--cyan">
+                <span class="stat-card__label">Proveedores</span>
+                <strong th:text="${proveedores}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Activos</span>
+                <strong th:text="${activos}">0</strong>
+            </article>
+            <article class="stat-card stat-card--pink">
+                <span class="stat-card__label">Suspendidos</span>
+                <strong th:text="${suspendidos}">0</strong>
+            </article>
+        </section>
+
+        <div class="admin-layout">
+            <aside class="panel admin-sidebar" aria-label="Módulos del panel">
+                <p class="admin-sidebar__title">Módulos</p>
+                <nav aria-label="Secciones disponibles">
+                    <a class="sidebar-link is-active" th:href="@{/admin}" aria-current="page">
+                        Usuarios
+                        <span class="badge" th:text="${total}">0</span>
+                    </a>
+                    <span class="sidebar-link is-disabled" aria-disabled="true">
+                        Eventos <small>Próximamente</small>
+                    </span>
+                    <span class="sidebar-link is-disabled" aria-disabled="true">
+                        Inventario <small>Próximamente</small>
+                    </span>
+                    <span class="sidebar-link is-disabled" aria-disabled="true">
+                        Artistas <small>Próximamente</small>
+                    </span>
+                </nav>
+                <p class="sidebar-note">
+                    Esta entrega incluye únicamente la gestión de usuarios. Los módulos de eventos,
+                    inventario y artistas se conectarán más adelante.
+                </p>
+            </aside>
+
+            <section class="panel admin-users" id="usuarios" aria-labelledby="users-title">
+                <header class="panel-head">
+                    <h2 id="users-title">Gestión de usuarios</h2>
+                    <p>
+                        Busca cuentas, edita sus datos, suspende accesos, restablece contraseñas
+                        o elimina usuarios que incumplan las normas.
+                    </p>
+                </header>
+
+                <form class="table-toolbar" th:action="@{/admin}" method="get" role="search">
+                    <div class="field">
+                        <label for="user-search">Buscar</label>
+                        <input id="user-search" type="search" name="q" th:value="${q}"
+                               placeholder="Nombre, correo o servicio" autocomplete="off">
+                    </div>
+
+                    <div class="field">
+                        <label for="filter-role">Rol</label>
+                        <select id="filter-role" name="rol">
+                            <option value="all" th:selected="${rolFiltro == 'all'}">Todos</option>
+                            <option value="cliente" th:selected="${rolFiltro == 'cliente'}">Clientes</option>
+                            <option value="proveedor" th:selected="${rolFiltro == 'proveedor'}">Proveedores</option>
+                            <option value="admin" th:selected="${rolFiltro == 'admin'}">Administradores</option>
+                            <option value="visitante" th:selected="${rolFiltro == 'visitante'}">Visitantes</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="filter-state">Estado</label>
+                        <select id="filter-state" name="estado">
+                            <option value="all" th:selected="${estadoFiltro == 'all'}">Todos</option>
+                            <option value="activo" th:selected="${estadoFiltro == 'activo'}">Activos</option>
+                            <option value="suspendido" th:selected="${estadoFiltro == 'suspendido'}">Suspendidos</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn--ghost" type="submit">Filtrar</button>
+                    <a class="btn btn--ghost" th:href="@{/admin}">Limpiar</a>
+                </form>
+
+                <div class="table-wrap" th:if="${!#lists.isEmpty(usuariosFiltrados)}">
+                    <table class="data-table">
+                        <caption class="sr-only">Usuarios registrados en Subsonic Festival</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Usuario</th>
+                                <th scope="col">Rol</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Correo</th>
+                                <th scope="col">Servicio</th>
+                                <th scope="col"><span class="sr-only">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="u : ${usuariosFiltrados}">
+                                <td>
+                                    <div class="user-cell">
+                                        <span class="user-cell__avatar"
+                                              th:classappend="${'role-' + (u.rol != null ? u.rol : 'visitante')}"
+                                              aria-hidden="true"
+                                              th:text="${@textos.iniciales(u.nombre)}">?</span>
+                                        <span class="user-cell__text">
+                                            <strong>
+                                                <span th:text="${u.nombre}">Nombre</span>
+                                                <span class="you-tag"
+                                                      th:if="${usuarioActual != null and u.id == usuarioActual.id}">Tú</span>
+                                            </strong>
+                                            <span class="mono" th:title="${u.id}"
+                                                  th:text="${#strings.length(u.id) > 8 ? #strings.substring(u.id, #strings.length(u.id) - 8) : u.id}">12345678</span>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${'badge--' + (u.rol != null ? u.rol : 'visitante')}"
+                                          th:text="${@textos.rol(u.rol)}">Cliente</span>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${u.estaActivo() ? 'badge--activo' : 'badge--suspendido'}"
+                                          th:text="${@textos.estado(u.estado)}">Activo</span>
+                                </td>
+                                <td>
+                                    <span class="email-cell">
+                                        <span th:text="${u.correo}">correo@ejemplo.com</span>
+                                        <span class="verify-dot verify-dot--ok" th:if="${u.emailVerificado}"
+                                              role="img" title="Correo verificado" aria-label="Correo verificado"></span>
+                                        <span class="verify-dot" th:unless="${u.emailVerificado}"
+                                              role="img" title="Correo sin verificar" aria-label="Correo sin verificar"></span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:if="${u.esProveedor()}"
+                                          th:text="${u.tipoServicio != null and !u.tipoServicio.isBlank() ? u.tipoServicio : 'Sin especificar'}">Servicio</span>
+                                    <span class="muted" th:unless="${u.esProveedor()}">—</span>
+                                </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a class="btn btn--table" th:href="@{/admin/{id}/editar(id=${u.id})}">Editar</a>
+
+                                        <form th:action="@{/admin/{id}/estado(id=${u.id})}" method="post">
+                                            <button class="btn btn--table" type="submit"
+                                                    th:text="${u.estaActivo() ? 'Suspender' : 'Activar'}"
+                                                    th:disabled="${usuarioActual != null and u.id == usuarioActual.id}"
+                                                    th:title="${usuarioActual != null and u.id == usuarioActual.id ? 'No puedes suspender tu propia cuenta' : null}">Suspender</button>
+                                        </form>
+
+                                        <a class="btn btn--table" th:href="@{/admin/{id}/password(id=${u.id})}">Contraseña</a>
+
+                                        <a class="btn btn--table btn--danger-ghost" th:href="@{/admin/{id}/eliminar(id=${u.id})}"
+                                           th:if="${usuarioActual == null or u.id != usuarioActual.id}">Eliminar</a>
+                                        <button class="btn btn--table btn--danger-ghost" type="button" disabled
+                                                th:if="${usuarioActual != null and u.id == usuarioActual.id}"
+                                                title="No puedes eliminar tu propia cuenta">Eliminar</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(usuariosFiltrados)}">
+                    <strong>No hay usuarios que coincidan con los filtros.</strong>
+                    <span>Prueba a cambiar la búsqueda o a limpiar los filtros.</span>
+                </div>
+
+                <p class="table-foot" th:if="${filtrado}"
+                   th:text="|Mostrando ${#lists.size(usuariosFiltrados)} de ${total} usuarios.|">Mostrando 0 de 0 usuarios.</p>
+                <p class="table-foot" th:unless="${filtrado}"
+                   th:text="|${total} ${total == 1 ? 'usuario registrado' : 'usuarios registrados'}.|">0 usuarios registrados.</p>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

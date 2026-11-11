@@ -1444,6 +1444,77 @@ body {
     color: var(--muted);
 }
 
+/* Vistas renderizadas en servidor ---------------------------------------- */
+
+.tabs a.tab {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.field input.is-invalid,
+.field select.is-invalid,
+.field textarea.is-invalid {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 4px rgba(255, 61, 129, 0.08);
+}
+
+.role-block {
+    display: grid;
+    gap: 17px;
+}
+
+.role-block .provider-fields {
+    display: none;
+}
+
+.role-block:has(input[name="rol"][value="proveedor"]:checked) .provider-fields {
+    display: block;
+}
+
+.row-actions form,
+.account-header__actions form {
+    display: contents;
+}
+
+.form-page {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.form-section-title {
+    margin-top: 4px;
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.form .form-actions,
+.form-page .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 8px;
+}
+
+.danger-zone .form-actions {
+    margin-top: 18px;
+}
+
+.danger-zone .form-section-title {
+    margin-top: 20px;
+}
+
+.danger-zone > p {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
 /* Responsive ------------------------------------------------------------- */
 
 @media (max-width: 1100px) {
