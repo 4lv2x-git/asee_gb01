@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Descubre los artistas de Subsonic Festival.">
+    <title>Artistas · Subsonic Festival 2027</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/artists-blog.css}">
+</head>
+<body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<header th:replace="~{fragments/navigation :: siteHeader}"></header>
+<main id="contenido" class="catalog-page">
+    <section class="container page-intro">
+        <p class="eyebrow"><span class="eyebrow__dot"></span> Cartel 2027</p>
+        <h1>Conoce a los <span class="text-lime">artistas.</span></h1>
+        <p>Explora sus historias, canciones destacadas y su relación con los eventos del festival.</p>
+        <form class="catalog-search" th:action="@{/artistas}" method="get" role="search">
+            <label for="artist-query">Buscar artista por nombre</label>
+            <div class="catalog-search__controls">
+                <input id="artist-query" name="q" type="search" th:value="${query}"
+                       placeholder="Por ejemplo, Nova Kills">
+                <button class="btn btn--primary" type="submit">Buscar</button>
+                <a class="btn btn--ghost" th:if="${!#strings.isEmpty(query)}"
+                   th:href="@{/artistas}">Limpiar</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="container catalog-content" aria-labelledby="artist-results-heading">
+        <h2 id="artist-results-heading" class="sr-only">Artistas disponibles</h2>
+        <div class="catalog-grid" th:if="${!#lists.isEmpty(artists)}">
+            <article class="catalog-card" th:each="artist : ${artists}">
+                <a class="catalog-card__image" th:href="@{/artistas/{id}(id=${artist.id})}">
+                    <img th:if="${!#strings.isEmpty(artist.imagen)}" th:src="${artist.imagen}"
+                         th:alt="${'Imagen de ' + artist.nombre}" loading="lazy">
+                    <span class="catalog-card__placeholder" th:if="${#strings.isEmpty(artist.imagen)}"
+                          aria-hidden="true">S</span>
+                </a>
+                <div class="catalog-card__body">
+                    <p class="eyebrow">Artista</p>
+                    <h2><a th:href="@{/artistas/{id}(id=${artist.id})}" th:text="${artist.nombre}">Nombre</a></h2>
+                    <a class="text-link" th:href="@{/artistas/{id}(id=${artist.id})}">
+                        Ver ficha <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </article>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(artists)}">
+            <h2 th:if="${#strings.isEmpty(query)}">Aún no hay artistas disponibles</h2>
+            <h2 th:unless="${#strings.isEmpty(query)}">No encontramos coincidencias</h2>
+            <p th:if="${#strings.isEmpty(query)}">El cartel se actualizará cuando haya artistas publicados.</p>
+            <p th:unless="${#strings.isEmpty(query)}">Prueba con otro nombre o limpia la búsqueda.</p>
+            <a class="btn btn--ghost" th:href="@{/artistas}" th:unless="${#strings.isEmpty(query)}">Ver todo el cartel</a>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/navigation :: siteFooter}"></footer>
+</body>
+</html>

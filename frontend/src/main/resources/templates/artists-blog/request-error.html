@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${status + ' · Subsonic Festival'}">Error · Subsonic Festival</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/artists-blog.css}">
+</head>
+<body>
+<header th:replace="~{fragments/navigation :: siteHeader}"></header>
+<main class="container error-page">
+    <p class="eyebrow"><span class="eyebrow__dot"></span> Error <span th:text="${status}">404</span></p>
+    <h1 th:text="${message}">No se encontró el contenido solicitado.</h1>
+    <a class="btn btn--primary" th:href="@{/}">Volver al inicio</a>
+</main>
+<footer th:replace="~{fragments/navigation :: siteFooter}"></footer>
+</body>
+</html>

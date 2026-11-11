@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicio no disponible · Subsonic Festival</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/artists-blog.css}">
+</head>
+<body>
+<header th:replace="~{fragments/navigation :: siteHeader}"></header>
+<main class="container error-page">
+    <p class="eyebrow"><span class="eyebrow__dot"></span> Error 503</p>
+    <h1>Ahora mismo no podemos conectar.</h1>
+    <p>El servicio de artistas y blog no está disponible. Inténtalo de nuevo más tarde.</p>
+    <a class="btn btn--primary" th:href="@{/}">Volver al inicio</a>
+</main>
+<footer th:replace="~{fragments/navigation :: siteFooter}"></footer>
+</body>
+</html>

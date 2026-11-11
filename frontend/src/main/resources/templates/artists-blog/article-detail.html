@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" th:content="${article.resumen}">
+    <title th:text="${article.titulo + ' · Blog Subsonic Festival'}">Artículo · Subsonic Festival</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/artists-blog.css}">
+</head>
+<body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<header th:replace="~{fragments/navigation :: siteHeader}"></header>
+<main id="contenido" class="detail-page container article-detail">
+    <a class="back-link" th:href="@{/blog}">← Volver al blog</a>
+    <article>
+        <header class="article-detail__header">
+            <p class="eyebrow"><span class="eyebrow__dot"></span> Blog Subsonic</p>
+            <h1 th:text="${article.titulo}">Título del artículo</h1>
+            <p class="article-meta">
+                <span th:text="${article.autor}">Equipo Subsonic</span>
+                <time th:if="${!#strings.isEmpty(article.fechaPublicacion)}"
+                      th:datetime="${article.fechaPublicacion}"
+                      th:text="${#strings.substring(article.fechaPublicacion, 0, 10)}">Fecha</time>
+            </p>
+        </header>
+        <img class="article-detail__image" th:if="${!#strings.isEmpty(article.imagen)}"
+             th:src="${article.imagen}" th:alt="${'Imagen de ' + article.titulo}">
+        <p class="article-detail__summary" th:text="${article.resumen}">Resumen del artículo</p>
+        <div class="article-content" th:text="${article.contenido}">Contenido del artículo</div>
+    </article>
+</main>
+<footer th:replace="~{fragments/navigation :: siteFooter}"></footer>
+</body>
+</html>
