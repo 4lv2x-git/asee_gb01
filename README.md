@@ -6,6 +6,8 @@
   Python/FastAPI con MongoDB, contratos OpenAPI y pruebas.
 - [Festivals Service](components/service-festivals/README.md): microservicio
   Python/FastAPI con PostgreSQL.
+- [Frontend](frontend/README.md): página principal, acceso y perfil de usuario y
+  panel de administración servidos con Spring Boot.
 
 **Miembros del grupo:**
 - Jaime Arias Rodríguez

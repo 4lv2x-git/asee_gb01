@@ -4,11 +4,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Aplicación Spring Boot que sirve la página principal de Subsonic Festival.
+ * Aplicación Spring Boot que sirve la web de Subsonic Festival.
  *
- * <p>Los recursos estáticos se encuentran en la raíz del proyecto
- * ({@code index.html} y {@code css/}) y se sirven tanto en desarrollo como
- * desde el JAR empaquetado.</p>
+ * <p>Incluye la página principal, el acceso y perfil de usuario, el panel de
+ * administración y un proxy same-origin hacia el microservicio
+ * {@code subsonic-users-auth}.</p>
  */
 @SpringBootApplication
 public class FrontendApplication {

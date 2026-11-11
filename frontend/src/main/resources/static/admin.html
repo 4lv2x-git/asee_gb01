@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel de administración de Subsonic Festival 2027. Gestión de usuarios.">
+    <meta name="theme-color" content="#070709">
+    <title>Panel de administración · Subsonic Festival 2027</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d8ff3e'/%3E%3Ctext x='50' y='73' font-family='Arial Black,Arial,sans-serif' font-size='64' font-weight='900' text-anchor='middle' fill='%23070709'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+    <a class="skip-link" href="#admin-main">Saltar al contenido</a>
+
+    <header class="site-header">
+        <div class="container header__inner account-header__inner">
+            <a class="logo" href="index.html" aria-label="Subsonic Festival, volver al inicio">
+                <span class="logo__mark" aria-hidden="true">S</span>
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a href="index.html">Inicio</a>
+                <a href="perfil.html">Mi perfil</a>
+                <a href="admin.html" aria-current="page">Panel admin</a>
+            </nav>
+
+            <div class="account-header__actions">
+                <span class="user-chip">
+                    <span class="user-chip__avatar" id="header-user-avatar" aria-hidden="true">?</span>
+                    <span class="user-chip__name" id="header-user-name">Administrador</span>
+                </span>
+                <span class="account-header__divider" aria-hidden="true"></span>
+                <button class="btn btn--ghost btn--small" type="button" id="logout-button">Salir</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main" id="admin-main">
+        <div class="container">
+            <div id="page-alert" class="alert" role="alert" aria-live="polite" hidden></div>
+
+            <header class="page-head">
+                <div>
+                    <p class="eyebrow"><span class="eyebrow__dot"></span> Administración</p>
+                    <h1>Panel de control</h1>
+                    <p>
+                        Modera las cuentas del festival, revisa su estado y da soporte a clientes y
+                        proveedores. El resto de módulos se incorporará en futuras entregas.
+                    </p>
+                </div>
+                <div class="page-head__actions">
+                    <button class="btn btn--ghost btn--small" type="button" id="refresh-users">Actualizar</button>
+                </div>
+            </header>
+
+            <div id="admin-loading" class="panel loading-panel" role="status">
+                Cargando el panel de administración…
+            </div>
+
+            <div id="admin-content" hidden>
+                <section class="stat-grid" aria-label="Resumen de usuarios">
+                    <article class="stat-card stat-card--lime">
+                        <span class="stat-card__label">Usuarios totales</span>
+                        <strong id="stat-total">0</strong>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-card__label">Clientes</span>
+                        <strong id="stat-clientes">0</strong>
+                    </article>
+                    <article class="stat-card stat-card--cyan">
+                        <span class="stat-card__label">Proveedores</span>
+                        <strong id="stat-proveedores">0</strong>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-card__label">Activos</span>
+                        <strong id="stat-activos">0</strong>
+                    </article>
+                    <article class="stat-card stat-card--pink">
+                        <span class="stat-card__label">Suspendidos</span>
+                        <strong id="stat-suspendidos">0</strong>
+                    </article>
+                </section>
+
+                <div class="admin-layout">
+                    <aside class="panel admin-sidebar" aria-label="Módulos del panel">
+                        <p class="admin-sidebar__title">Módulos</p>
+                        <nav aria-label="Secciones disponibles">
+                            <a class="sidebar-link is-active" href="#usuarios" aria-current="page">
+                                Usuarios
+                                <span id="user-count" class="badge">0</span>
+                            </a>
+                            <span class="sidebar-link is-disabled" aria-disabled="true">
+                                Eventos <small>Próximamente</small>
+                            </span>
+                            <span class="sidebar-link is-disabled" aria-disabled="true">
+                                Inventario <small>Próximamente</small>
+                            </span>
+                            <span class="sidebar-link is-disabled" aria-disabled="true">
+                                Artistas <small>Próximamente</small>
+                            </span>
+                        </nav>
+                        <p class="sidebar-note">
+                            Esta entrega incluye únicamente la gestión de usuarios. Los módulos de eventos,
+                            inventario y artistas se conectarán más adelante.
+                        </p>
+                    </aside>
+
+                    <section class="panel admin-users" id="usuarios" aria-labelledby="users-title">
+                        <header class="panel-head">
+                            <h2 id="users-title">Gestión de usuarios</h2>
+                            <p>
+                                Busca cuentas, edita sus datos, suspende accesos, restablece contraseñas
+                                o elimina usuarios que incumplan las normas.
+                            </p>
+                        </header>
+
+                        <div class="table-toolbar">
+                            <div class="field">
+                                <label for="user-search">Buscar</label>
+                                <input id="user-search" type="search" placeholder="Nombre, correo o servicio" autocomplete="off">
+                            </div>
+
+                            <div class="field">
+                                <label for="filter-role">Rol</label>
+                                <select id="filter-role">
+                                    <option value="all">Todos</option>
+                                    <option value="cliente">Clientes</option>
+                                    <option value="proveedor">Proveedores</option>
+                                    <option value="admin">Administradores</option>
+                                    <option value="visitante">Visitantes</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="filter-state">Estado</label>
+                                <select id="filter-state">
+                                    <option value="all">Todos</option>
+                                    <option value="activo">Activos</option>
+                                    <option value="suspendido">Suspendidos</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn--ghost" type="button" id="clear-filters">Limpiar</button>
+                        </div>
+
+                        <div class="table-wrap" id="users-table-wrap">
+                            <table class="data-table">
+                                <caption class="sr-only">Usuarios registrados en Subsonic Festival</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Usuario</th>
+                                        <th scope="col">Rol</th>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col">Correo</th>
+                                        <th scope="col">Servicio</th>
+                                        <th scope="col"><span class="sr-only">Acciones</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-body"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="empty-state" id="users-empty" hidden>
+                            <strong>No hay usuarios que coincidan con los filtros.</strong>
+                            <span>Prueba a cambiar la búsqueda o a limpiar los filtros.</span>
+                        </div>
+
+                        <p class="table-foot" id="users-summary">0 usuarios registrados.</p>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="account-footer">
+        <div class="container account-footer__inner">
+            <p>© 2027 Subsonic Festival · Madrid</p>
+            <p><a href="index.html">Volver a la página principal</a></p>
+        </div>
+    </footer>
+
+    <dialog class="dialog" id="edit-user-dialog" aria-labelledby="edit-user-title">
+        <form id="edit-user-form" novalidate>
+            <div class="dialog__head">
+                <h2 id="edit-user-title">Editar usuario</h2>
+                <button type="button" class="dialog__close" data-close-dialog aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="dialog__body">
+                <div class="dialog-user" id="edit-user-summary"></div>
+
+                <input type="hidden" name="userId">
+
+                <div class="dialog-form">
+                    <div class="field">
+                        <label for="edit-user-name">Nombre completo</label>
+                        <input id="edit-user-name" name="nombre" type="text" autocomplete="off" required>
+                        <p class="field__error" data-error-for="nombre" hidden></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="edit-user-address">Dirección</label>
+                        <input id="edit-user-address" name="direccion" type="text" autocomplete="off" placeholder="Calle, número, ciudad">
+                    </div>
+
+                    <div id="edit-provider-fields" hidden>
+                        <div class="field">
+                            <label for="edit-user-service">Tipo de servicio</label>
+                            <input id="edit-user-service" name="tipoServicio" type="text" autocomplete="off">
+                            <p class="field__error" data-error-for="tipoServicio" hidden></p>
+                        </div>
+
+                        <div class="field">
+                            <label for="edit-user-description">Descripción del servicio</label>
+                            <textarea id="edit-user-description" name="descripcionServicio" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <p class="dialog__note">
+                        El correo y el rol no se pueden modificar. Los cambios se guardan directamente en
+                        la cuenta del usuario.
+                    </p>
+                </div>
+            </div>
+
+            <div class="dialog__foot">
+                <button type="button" class="btn btn--ghost" data-close-dialog>Cancelar</button>
+                <button type="submit" class="btn btn--primary" id="edit-user-submit">Guardar cambios</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog class="dialog" id="password-dialog" aria-labelledby="password-title">
+        <form id="password-form" novalidate>
+            <div class="dialog__head">
+                <h2 id="password-title">Restablecer contraseña</h2>
+                <button type="button" class="dialog__close" data-close-dialog aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="dialog__body">
+                <div class="dialog-body__summary" id="password-user-summary"></div>
+
+                <div class="dialog-form">
+                    <div class="field">
+                        <label for="admin-password-new">Nueva contraseña</label>
+                        <div class="input-group">
+                            <input id="admin-password-new" name="nuevaPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo 8 caracteres" required>
+                            <button type="button" class="input-group__toggle" data-toggle-password="admin-password-new" aria-label="Mostrar contraseña">Ver</button>
+                        </div>
+                        <p class="field__error" data-error-for="nuevaPassword" hidden></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="admin-password-confirm">Repite la contraseña</label>
+                        <div class="input-group">
+                            <input id="admin-password-confirm" name="nuevaPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Repite la contraseña" required>
+                            <button type="button" class="input-group__toggle" data-toggle-password="admin-password-confirm" aria-label="Mostrar contraseña">Ver</button>
+                        </div>
+                        <p class="field__error" data-error-for="nuevaPasswordConfirm" hidden></p>
+                    </div>
+
+                    <p class="dialog__note">
+                        Al cambiar la contraseña se invalidarán todas las sesiones abiertas de este usuario.
+                    </p>
+                </div>
+            </div>
+
+            <div class="dialog__foot">
+                <button type="button" class="btn btn--ghost" data-close-dialog>Cancelar</button>
+                <button type="submit" class="btn btn--primary" id="password-submit">Actualizar contraseña</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>

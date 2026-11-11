@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestiona tu perfil de Subsonic Festival 2027: datos personales, correo verificado y cuenta.">
+    <meta name="theme-color" content="#070709">
+    <title>Mi perfil · Subsonic Festival 2027</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d8ff3e'/%3E%3Ctext x='50' y='73' font-family='Arial Black,Arial,sans-serif' font-size='64' font-weight='900' text-anchor='middle' fill='%23070709'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+    <a class="skip-link" href="#perfil-main">Saltar al contenido</a>
+
+    <header class="site-header">
+        <div class="container header__inner account-header__inner">
+            <a class="logo" href="index.html" aria-label="Subsonic Festival, volver al inicio">
+                <span class="logo__mark" aria-hidden="true">S</span>
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a href="index.html">Inicio</a>
+                <a href="perfil.html" aria-current="page">Mi perfil</a>
+                <a href="admin.html" id="admin-nav" hidden>Panel admin</a>
+            </nav>
+
+            <div class="account-header__actions">
+                <span class="user-chip">
+                    <span class="user-chip__avatar" id="header-user-avatar" aria-hidden="true">?</span>
+                    <span class="user-chip__name" id="header-user-name">Mi cuenta</span>
+                </span>
+                <span class="account-header__divider" aria-hidden="true"></span>
+                <button class="btn btn--ghost btn--small" type="button" id="logout-button">Salir</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main" id="perfil-main">
+        <div class="container">
+            <div id="page-alert" class="alert" role="alert" aria-live="polite" hidden></div>
+
+            <header class="page-head">
+                <div>
+                    <p class="eyebrow"><span class="eyebrow__dot"></span> Área personal</p>
+                    <h1>Mi perfil</h1>
+                    <p>Consulta y actualiza los datos asociados a tu cuenta de Subsonic Festival.</p>
+                </div>
+                <div class="page-head__meta" aria-label="Resumen de la cuenta">
+                    <span id="profile-role-badge"></span>
+                    <span id="profile-state-badge"></span>
+                </div>
+            </header>
+
+            <div id="profile-loading" class="panel loading-panel" role="status">
+                Cargando tu perfil…
+            </div>
+
+            <div id="profile-content" hidden>
+                <div class="profile-grid">
+                    <aside class="panel identity-card" aria-labelledby="identity-name">
+                        <div class="identity-card__head">
+                            <span class="identity-card__avatar" id="identity-avatar" aria-hidden="true">?</span>
+                            <div>
+                                <h2 id="identity-name">Tu cuenta</h2>
+                                <p class="identity-card__email" id="identity-email">—</p>
+                            </div>
+                        </div>
+
+                        <div class="identity-card__badges">
+                            <span id="detail-verified-badge"></span>
+                        </div>
+
+                        <dl class="detail-list">
+                            <div>
+                                <dt>Rol</dt>
+                                <dd id="detail-role">—</dd>
+                            </div>
+                            <div>
+                                <dt>Estado</dt>
+                                <dd id="detail-state">—</dd>
+                            </div>
+                            <div>
+                                <dt>Correo</dt>
+                                <dd id="detail-verified">—</dd>
+                            </div>
+                            <div id="detail-service-row" hidden>
+                                <dt>Servicio</dt>
+                                <dd id="detail-service">—</dd>
+                            </div>
+                            <div>
+                                <dt>ID de cuenta</dt>
+                                <dd class="detail-list__mono" id="detail-id">—</dd>
+                            </div>
+                        </dl>
+
+                        <p class="identity-description" id="identity-description" hidden></p>
+
+                        <section class="verify-panel" id="verify-email-block" hidden aria-labelledby="verify-title">
+                            <h3 id="verify-title">Verifica tu correo</h3>
+                            <p>
+                                Introduce el código que recibiste al registrarte para confirmar tu dirección.
+                                Si no lo recibiste, contacta con el equipo del festival.
+                            </p>
+                            <form class="verify-form" id="verify-email-form" novalidate>
+                                <div class="field">
+                                    <label class="sr-only" for="verify-code">Código de verificación</label>
+                                    <input id="verify-code" name="codigo" type="text" placeholder="Código de verificación" autocomplete="one-time-code" required>
+                                    <p class="field__error" data-error-for="codigo" hidden></p>
+                                </div>
+                                <button class="btn btn--primary btn--small" type="submit" id="verify-submit">Verificar</button>
+                            </form>
+                        </section>
+                    </aside>
+
+                    <div class="stack">
+                        <section class="panel panel-section" aria-labelledby="profile-data-title">
+                            <header class="panel-head">
+                                <h2 id="profile-data-title">Datos personales</h2>
+                                <p>El correo y el rol de la cuenta no se pueden modificar desde aquí.</p>
+                            </header>
+
+                            <form class="form profile-form" id="profile-form" novalidate>
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <label for="profile-name">Nombre completo</label>
+                                        <input id="profile-name" name="nombre" type="text" autocomplete="name" required>
+                                        <p class="field__error" data-error-for="nombre" hidden></p>
+                                    </div>
+
+                                    <div class="field">
+                                        <label for="profile-address">Dirección</label>
+                                        <input id="profile-address" name="direccion" type="text" placeholder="Calle, número, ciudad" autocomplete="street-address">
+                                    </div>
+                                </div>
+
+                                <div id="profile-provider-fields" hidden>
+                                    <div class="form-grid">
+                                        <div class="field form-grid__full">
+                                            <label for="profile-service">Tipo de servicio</label>
+                                            <input id="profile-service" name="tipoServicio" type="text" placeholder="Ej. comida, sonido, merchandising">
+                                            <p class="field__error" data-error-for="tipoServicio" hidden></p>
+                                        </div>
+
+                                        <div class="field form-grid__full">
+                                            <label for="profile-description">Descripción del servicio</label>
+                                            <textarea id="profile-description" name="descripcionServicio" rows="4" placeholder="Describe brevemente tu servicio y tus necesidades."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button class="btn btn--primary" type="submit" id="profile-submit">Guardar cambios</button>
+                                </div>
+                            </form>
+                        </section>
+
+                        <section class="panel panel-section" aria-labelledby="security-title">
+                            <h2 id="security-title">Seguridad</h2>
+                            <p>
+                                Para cambiar tu contraseña necesitas un código de recuperación. Los tokens
+                                anteriores se invalidan automáticamente al establecer una nueva.
+                            </p>
+                            <a class="btn btn--ghost" href="login.html?recuperar=1">Cambiar contraseña</a>
+                        </section>
+
+                        <section class="panel panel-section danger-zone" aria-labelledby="delete-title">
+                            <h3 id="delete-title">Eliminar cuenta</h3>
+                            <p>
+                                Da de baja tu cuenta de forma permanente. Se borrarán tus datos y se cerrarán
+                                todas las sesiones activas.
+                            </p>
+                            <button class="btn btn--danger" type="button" id="delete-account">Eliminar mi cuenta</button>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="account-footer">
+        <div class="container account-footer__inner">
+            <p>© 2027 Subsonic Festival · Madrid</p>
+            <p><a href="index.html">Volver a la página principal</a></p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/perfil.js"></script>
+</body>
+</html>

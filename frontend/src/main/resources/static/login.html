@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Accede a tu cuenta de Subsonic Festival 2027: inicia sesión, crea tu cuenta de cliente o proveedor y recupera tu contraseña.">
+    <meta name="theme-color" content="#070709">
+    <title>Acceso · Subsonic Festival 2027</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d8ff3e'/%3E%3Ctext x='50' y='73' font-family='Arial Black,Arial,sans-serif' font-size='64' font-weight='900' text-anchor='middle' fill='%23070709'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+<body class="auth-page">
+    <a class="skip-link" href="#auth-main">Saltar al contenido</a>
+
+    <header class="site-header">
+        <div class="container header__inner">
+            <a class="logo" href="index.html" aria-label="Subsonic Festival, volver al inicio">
+                <span class="logo__mark" aria-hidden="true">S</span>
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a href="index.html#cartel">Cartel</a>
+                <a href="index.html#experiencia">Experiencia</a>
+                <a href="index.html#entradas">Entradas</a>
+                <a href="index.html#ubicacion">Ubicación</a>
+            </nav>
+
+            <a class="btn btn--ghost btn--small" href="index.html">Volver al inicio</a>
+        </div>
+    </header>
+
+    <main id="auth-main" class="auth-main">
+        <div class="container auth-layout">
+            <section class="auth-intro" aria-labelledby="auth-title">
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Área de usuario</p>
+                <h1 id="auth-title">Tu sitio.<br><span class="text-outline">Tu ruido.</span></h1>
+                <p>
+                    Entra en tu cuenta para gestionar tus datos, verificar tu correo y acceder a las
+                    herramientas de cliente o proveedor del festival.
+                </p>
+
+                <ul class="auth-benefits">
+                    <li><strong>01</strong><span>Compra y gestiona tus abonos con una sola cuenta.</span></li>
+                    <li><strong>02</strong><span>Los proveedores pueden mantener sus datos de servicio al día.</span></li>
+                    <li><strong>03</strong><span>El equipo de administración modera y da soporte a todas las cuentas.</span></li>
+                </ul>
+            </section>
+
+            <section class="auth-panel" aria-label="Acceso y registro">
+                <div id="active-session" class="active-session" hidden></div>
+
+                <div class="tabs" role="tablist" aria-label="Iniciar sesión o crear cuenta">
+                    <button type="button" class="tab is-active" id="tab-login" role="tab" aria-selected="true" aria-controls="panel-login" data-tab="login">
+                        Entrar
+                    </button>
+                    <button type="button" class="tab" id="tab-register" role="tab" aria-selected="false" aria-controls="panel-register" data-tab="register" tabindex="-1">
+                        Crear cuenta
+                    </button>
+                </div>
+
+                <div id="auth-alert" class="alert" role="alert" aria-live="polite" hidden></div>
+
+                <section class="tab-panel" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+                    <header class="panel-head">
+                        <h2>Iniciar sesión</h2>
+                        <p>Introduce las credenciales con las que te registraste.</p>
+                    </header>
+
+                    <form class="form" id="login-form" novalidate>
+                        <div class="field">
+                            <label for="login-email">Correo electrónico</label>
+                            <input id="login-email" name="correo" type="email" placeholder="tu@email.com" autocomplete="email" required>
+                            <p class="field__error" data-error-for="correo" hidden></p>
+                        </div>
+
+                        <div class="field">
+                            <div class="field__label-row">
+                                <label for="login-password">Contraseña</label>
+                                <button type="button" class="link-button" data-open-recovery>¿La has olvidado?</button>
+                            </div>
+                            <div class="input-group">
+                                <input id="login-password" name="password" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+                                <button type="button" class="input-group__toggle" data-toggle-password="login-password" aria-label="Mostrar contraseña">Ver</button>
+                            </div>
+                            <p class="field__error" data-error-for="password" hidden></p>
+                        </div>
+
+                        <button class="btn btn--primary btn--full" type="submit" id="login-submit">Entrar</button>
+                    </form>
+
+                    <p class="panel-foot">
+                        ¿Aún no tienes cuenta?
+                        <button type="button" class="link-button" data-tab-target="register">Crear una cuenta</button>
+                    </p>
+                </section>
+
+                <section class="tab-panel" id="panel-register" role="tabpanel" aria-labelledby="tab-register" hidden>
+                    <header class="panel-head">
+                        <h2>Crear cuenta</h2>
+                        <p>Regístrate como cliente o como proveedor de servicios del festival.</p>
+                    </header>
+
+                    <form class="form" id="register-form" novalidate>
+                        <div class="form-grid">
+                            <div class="field form-grid__full">
+                                <label for="register-name">Nombre completo</label>
+                                <input id="register-name" name="nombre" type="text" placeholder="Tu nombre" autocomplete="name" required>
+                                <p class="field__error" data-error-for="nombre" hidden></p>
+                            </div>
+
+                            <div class="field form-grid__full">
+                                <label for="register-email">Correo electrónico</label>
+                                <input id="register-email" name="correo" type="email" placeholder="tu@email.com" autocomplete="email" required>
+                                <p class="field__error" data-error-for="correo" hidden></p>
+                            </div>
+
+                            <div class="field">
+                                <label for="register-password">Contraseña</label>
+                                <div class="input-group">
+                                    <input id="register-password" name="password" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                                    <button type="button" class="input-group__toggle" data-toggle-password="register-password" aria-label="Mostrar contraseña">Ver</button>
+                                </div>
+                                <p class="field__hint">Mínimo 8 caracteres.</p>
+                                <p class="field__error" data-error-for="password" hidden></p>
+                            </div>
+
+                            <div class="field">
+                                <label for="register-password-confirm">Repite la contraseña</label>
+                                <div class="input-group">
+                                    <input id="register-password-confirm" name="passwordConfirm" type="password" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                                    <button type="button" class="input-group__toggle" data-toggle-password="register-password-confirm" aria-label="Mostrar contraseña">Ver</button>
+                                </div>
+                                <p class="field__error" data-error-for="passwordConfirm" hidden></p>
+                            </div>
+                        </div>
+
+                        <fieldset class="role-choice">
+                            <legend>Tipo de cuenta</legend>
+                            <label class="role-card is-selected">
+                                <input type="radio" name="rol" value="cliente" checked>
+                                <span class="role-card__copy">
+                                    <strong>Cliente</strong>
+                                    <small>Quiero comprar entradas y participar en la comunidad.</small>
+                                </span>
+                            </label>
+                            <label class="role-card">
+                                <input type="radio" name="rol" value="proveedor">
+                                <span class="role-card__copy">
+                                    <strong>Proveedor</strong>
+                                    <small>Quiero ofrecer comida, bebida, merchandising u otros servicios.</small>
+                                </span>
+                            </label>
+                        </fieldset>
+
+                        <div id="provider-fields" hidden>
+                            <div class="form-grid">
+                                <div class="field form-grid__full">
+                                    <label for="register-service">Tipo de servicio</label>
+                                    <input id="register-service" name="tipoServicio" type="text" list="service-types" placeholder="Ej. comida, sonido, merchandising" autocomplete="off">
+                                    <datalist id="service-types">
+                                        <option value="comida"></option>
+                                        <option value="bebida"></option>
+                                        <option value="merchandising"></option>
+                                        <option value="sonido"></option>
+                                        <option value="iluminación"></option>
+                                        <option value="otro"></option>
+                                    </datalist>
+                                    <p class="field__error" data-error-for="tipoServicio" hidden></p>
+                                </div>
+
+                                <div class="field form-grid__full">
+                                    <label for="register-description">Descripción del servicio <span class="muted">(opcional)</span></label>
+                                    <textarea id="register-description" name="descripcionServicio" rows="3" placeholder="Cuéntanos qué ofreces y qué necesitas para montarlo."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="form-note">
+                            Al crear una cuenta aceptas las condiciones del festival y el tratamiento de tus
+                            datos para la gestión de la cuenta.
+                        </p>
+
+                        <button class="btn btn--primary btn--full" type="submit" id="register-submit">Crear mi cuenta</button>
+                    </form>
+
+                    <p class="panel-foot">
+                        ¿Ya tienes cuenta?
+                        <button type="button" class="link-button" data-tab-target="login">Iniciar sesión</button>
+                    </p>
+                </section>
+
+                <section class="tab-panel" id="panel-recovery" aria-labelledby="recovery-title" hidden>
+                    <header class="panel-head">
+                        <h2 id="recovery-title">Recuperar acceso</h2>
+                        <p>
+                            Solicita un código de recuperación y úsalo para establecer una nueva contraseña.
+                            El código caduca a los 15 minutos y solo puede utilizarse una vez.
+                        </p>
+                    </header>
+
+                    <form class="form" id="forgot-form" novalidate>
+                        <div class="field">
+                            <label for="forgot-email">Correo electrónico</label>
+                            <input id="forgot-email" name="correo" type="email" placeholder="tu@email.com" autocomplete="email" required>
+                            <p class="field__error" data-error-for="correo" hidden></p>
+                        </div>
+                        <button class="btn btn--ghost btn--full" type="submit" id="forgot-submit">Solicitar código</button>
+                    </form>
+
+                    <hr class="form-divider">
+
+                    <form class="form" id="reset-form" novalidate>
+                        <div class="field">
+                            <label for="reset-code">Código de recuperación</label>
+                            <input id="reset-code" name="codigo" type="text" placeholder="Pega el código recibido" autocomplete="one-time-code" minlength="16" required>
+                            <p class="field__hint">Es el código generado al solicitar la recuperación.</p>
+                            <p class="field__error" data-error-for="codigo" hidden></p>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="reset-password">Nueva contraseña</label>
+                                <div class="input-group">
+                                    <input id="reset-password" name="nuevaPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                                    <button type="button" class="input-group__toggle" data-toggle-password="reset-password" aria-label="Mostrar contraseña">Ver</button>
+                                </div>
+                                <p class="field__error" data-error-for="nuevaPassword" hidden></p>
+                            </div>
+
+                            <div class="field">
+                                <label for="reset-password-confirm">Repite la contraseña</label>
+                                <div class="input-group">
+                                    <input id="reset-password-confirm" name="nuevaPasswordConfirm" type="password" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                                    <button type="button" class="input-group__toggle" data-toggle-password="reset-password-confirm" aria-label="Mostrar contraseña">Ver</button>
+                                </div>
+                                <p class="field__error" data-error-for="nuevaPasswordConfirm" hidden></p>
+                            </div>
+                        </div>
+
+                        <button class="btn btn--primary btn--full" type="submit" id="reset-submit">Cambiar contraseña</button>
+                    </form>
+
+                    <p class="panel-foot">
+                        <button type="button" class="link-button" data-back-to-login>Volver a iniciar sesión</button>
+                    </p>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <footer class="account-footer">
+        <div class="container account-footer__inner">
+            <p>© 2027 Subsonic Festival · Madrid</p>
+            <p><a href="index.html">Volver a la página principal</a></p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/auth.js"></script>
+</body>
+</html>
