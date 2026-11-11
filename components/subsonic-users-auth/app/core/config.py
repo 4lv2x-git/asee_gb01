@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     spaces_service_url: str = "http://subsonic-spaces:8000/v1"
     spaces_timeout_seconds: float = 5.0
 
-    admin_email: str = "admin@subsonic.local"
+    admin_email: str = "admin@subsonicfestival.com"
     admin_password: str = "cambia-esto-en-produccion"
 
     smtp_host: str | None = None
@@ -36,6 +36,13 @@ class Settings(BaseSettings):
         case_sensitive=False,
         extra="ignore",
     )
+
+    @field_validator("smtp_port", mode="before")
+    @classmethod
+    def blank_port_to_none(cls, value):
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @field_validator("jwt_secret", "internal_api_key")
     @classmethod
