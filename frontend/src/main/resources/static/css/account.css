@@ -203,8 +203,26 @@ body {
     align-items: center;
     gap: 9px;
     min-width: 0;
+    padding: 2px;
+    border-radius: 999px;
     font-size: 13px;
     color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.user-chip:hover .user-chip__name,
+.user-chip:focus-visible .user-chip__name {
+    color: var(--lime);
+}
+
+.user-chip:hover .user-chip__avatar {
+    border-color: var(--lime);
+}
+
+.user-chip:focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 4px;
 }
 
 .user-chip__avatar {
@@ -220,6 +238,7 @@ body {
     font-family: var(--display);
     font-size: 17px;
     line-height: 1;
+    transition: border-color 0.2s ease;
 }
 
 .user-chip__name {
@@ -501,13 +520,17 @@ body {
 }
 
 .input-group input {
-    padding-right: 76px;
+    padding-right: 82px;
 }
 
 .input-group__toggle {
     position: absolute;
     top: 50%;
     right: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
     padding: 8px;
     border: 0;
     border-radius: 8px;
@@ -521,8 +544,17 @@ body {
     transform: translateY(-50%);
 }
 
+.input-group__toggle[hidden] {
+    display: none;
+}
+
 .input-group__toggle:hover {
     background: rgba(216, 255, 62, 0.1);
+}
+
+.input-group__toggle:focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 0;
 }
 
 .role-choice {

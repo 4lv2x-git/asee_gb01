@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" th:href="@{/css/account.css}">
+    <script th:src="@{/js/cuenta.js}" defer></script>
 </head>
 <body>
 
@@ -53,12 +54,14 @@
         </nav>
 
         <div class="account-header__actions">
-            <span class="user-chip">
+            <a class="user-chip" th:href="@{/perfil}"
+               th:title="${usuarioActual != null ? 'Ir al perfil de ' + usuarioActual.nombre : 'Mi perfil'}"
+               th:attr="aria-label=${usuarioActual != null ? 'Ir al perfil de ' + usuarioActual.nombre : 'Mi perfil'}">
                 <span class="user-chip__avatar" aria-hidden="true"
                       th:text="${usuarioActual != null ? iniciales : '?'}">?</span>
                 <span class="user-chip__name"
                       th:text="${usuarioActual != null ? usuarioActual.nombre : 'Mi cuenta'}">Mi cuenta</span>
-            </span>
+            </a>
             <span class="account-header__divider" aria-hidden="true"></span>
             <form th:action="@{/logout}" method="post">
                 <button class="btn btn--ghost btn--small" type="submit">Salir</button>

@@ -75,8 +75,13 @@
                             <label for="login-password">Contraseña</label>
                             <a class="link-button" th:href="@{/login(vista='recuperar')}">¿La has olvidado?</a>
                         </div>
-                        <input id="login-password" type="password" th:field="*{password}"
-                               th:errorclass="is-invalid" placeholder="Tu contraseña" autocomplete="current-password" required>
+                        <div class="input-group">
+                            <input id="login-password" type="password" th:field="*{password}"
+                                   th:errorclass="is-invalid" placeholder="Tu contraseña" autocomplete="current-password" required>
+                            <button class="input-group__toggle" type="button" data-password-toggle
+                                    aria-controls="login-password" aria-pressed="false"
+                                    aria-label="Mostrar contraseña" hidden>Mostrar</button>
+                        </div>
                         <p class="field__error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Introduce tu contraseña.</p>
                     </div>
 
@@ -113,16 +118,26 @@
 
                         <div class="field">
                             <label for="register-password">Contraseña</label>
-                            <input id="register-password" type="password" th:field="*{password}"
-                                   th:errorclass="is-invalid" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                            <div class="input-group">
+                                <input id="register-password" type="password" th:field="*{password}"
+                                       th:errorclass="is-invalid" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                                <button class="input-group__toggle" type="button" data-password-toggle
+                                        aria-controls="register-password" aria-pressed="false"
+                                        aria-label="Mostrar contraseña" hidden>Mostrar</button>
+                            </div>
                             <p class="field__hint">Mínimo 8 caracteres.</p>
                             <p class="field__error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">La contraseña debe tener al menos 8 caracteres.</p>
                         </div>
 
                         <div class="field">
                             <label for="register-password-confirm">Repite la contraseña</label>
-                            <input id="register-password-confirm" type="password" th:field="*{passwordConfirm}"
-                                   th:errorclass="is-invalid" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                            <div class="input-group">
+                                <input id="register-password-confirm" type="password" th:field="*{passwordConfirm}"
+                                       th:errorclass="is-invalid" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                                <button class="input-group__toggle" type="button" data-password-toggle
+                                        aria-controls="register-password-confirm" aria-pressed="false"
+                                        aria-label="Mostrar contraseña" hidden>Mostrar</button>
+                            </div>
                             <p class="field__error" th:if="${#fields.hasErrors('passwordConfirm')}" th:errors="*{passwordConfirm}">Repite la contraseña.</p>
                         </div>
                     </div>
@@ -220,15 +235,25 @@
                     <div class="form-grid">
                         <div class="field">
                             <label for="reset-password">Nueva contraseña</label>
-                            <input id="reset-password" type="password" th:field="*{nuevaPassword}"
-                                   th:errorclass="is-invalid" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                            <div class="input-group">
+                                <input id="reset-password" type="password" th:field="*{nuevaPassword}"
+                                       th:errorclass="is-invalid" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
+                                <button class="input-group__toggle" type="button" data-password-toggle
+                                        aria-controls="reset-password" aria-pressed="false"
+                                        aria-label="Mostrar contraseña" hidden>Mostrar</button>
+                            </div>
                             <p class="field__error" th:if="${#fields.hasErrors('nuevaPassword')}" th:errors="*{nuevaPassword}">La nueva contraseña debe tener al menos 8 caracteres.</p>
                         </div>
 
                         <div class="field">
                             <label for="reset-password-confirm">Repite la contraseña</label>
-                            <input id="reset-password-confirm" type="password" th:field="*{nuevaPasswordConfirm}"
-                                   th:errorclass="is-invalid" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                            <div class="input-group">
+                                <input id="reset-password-confirm" type="password" th:field="*{nuevaPasswordConfirm}"
+                                       th:errorclass="is-invalid" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
+                                <button class="input-group__toggle" type="button" data-password-toggle
+                                        aria-controls="reset-password-confirm" aria-pressed="false"
+                                        aria-label="Mostrar contraseña" hidden>Mostrar</button>
+                            </div>
                             <p class="field__error" th:if="${#fields.hasErrors('nuevaPasswordConfirm')}" th:errors="*{nuevaPasswordConfirm}">Repite la nueva contraseña.</p>
                         </div>
                     </div>

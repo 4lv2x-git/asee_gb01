@@ -14,6 +14,7 @@ el servidor.
 | `/perfil` | Perfil del usuario autenticado: datos personales, datos de proveedor, verificación de correo y baja de cuenta. |
 | `/admin` | Panel de administración. En esta entrega solo incluye la **gestión de usuarios**; eventos, inventario y artistas se incorporarán más adelante. |
 | `/cuenta` | Redirección usada por el enlace «Acceso» de la portada: lleva al perfil, al panel de administración o al formulario de acceso según la sesión. |
+| `/api/sesion` | Estado público de la sesión (nombre e iniciales) que usa la portada para mostrar el acceso al perfil cuando hay sesión iniciada. |
 
 Las antiguas rutas `/login.html`, `/perfil.html` y `/admin.html` siguen funcionando y
 redirigen a las rutas limpias.
@@ -31,6 +32,7 @@ frontend/
     │       ├── AuthController.java               # /login, /registro, /recuperar, /restablecer, /logout
     │       ├── PerfilController.java             # /perfil y acciones del área personal
     │       ├── AdminController.java              # /admin y gestión de usuarios
+    │       ├── SesionApiController.java          # /api/sesion para la portada estática
     │       ├── UsuariosAuthClient.java           # Cliente Java de subsonic-users-auth
     │       ├── UsuariosAuthException.java        # Errores normalizados de la API
     │       ├── Sesion.java                       # Token y usuario en la HttpSession
@@ -57,7 +59,8 @@ frontend/
             │   ├── styles.css                    # Estilos de la página principal
             │   └── account.css                   # Acceso, perfil y administración
             └── js/
-                └── site.js                       # Reservado para mejoras de la portada
+                ├── site.js                       # Acceso al perfil en la portada según la sesión
+                └── cuenta.js                     # Mostrar u ocultar contraseñas en las páginas de cuenta
 ```
 
 ## Requisitos
@@ -176,8 +179,15 @@ contraseña y eliminación tienen páginas propias renderizadas con Thymeleaf.
 
 ## Notas
 
-- La página principal (`index.html`) sigue funcionando sin backend; el enlace
-  «Acceso» apunta a `/cuenta`, que necesita el frontend arrancado con Spring Boot.
+- Todos los campos de contraseña de las páginas de cuenta incluyen un botón para
+  mostrar u ocultar el texto. Es una mejora progresiva: si JavaScript está
+  desactivado, el botón no aparece y el campo funciona con normalidad.
+- La página principal (`index.html`) sigue funcionando sin backend. Si el
+  frontend está arrancado y hay una sesión activa, `site.js` sustituye el enlace
+  «Acceso» por el avatar con iniciales y el nombre del usuario, que enlaza
+  directamente a `/perfil`. Sin sesión o sin conexión se mantiene `/cuenta`.
+- En las páginas de cuenta, el avatar y el nombre de la cabecera también enlazan
+  a `/perfil`.
 - Los estilos de las páginas de cuenta reutilizan las variables y componentes de
   `css/styles.css` desde `css/account.css`.
 - En desarrollo, `spring.thymeleaf.cache=false` permite ver los cambios de las

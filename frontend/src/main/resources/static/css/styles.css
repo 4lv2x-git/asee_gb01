@@ -312,6 +312,51 @@ section[id] {
     transform: scaleX(1);
 }
 
+/* Acceso con sesión iniciada (portada) ------------------------------------ */
+
+.site-nav a.nav-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--ink);
+    font-weight: 500;
+}
+
+.site-nav a.nav-user::after {
+    display: none;
+}
+
+.nav-user__avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--panel);
+    color: var(--lime);
+    font-family: var(--display);
+    font-size: 16px;
+    line-height: 1;
+    transition: border-color 0.2s ease;
+}
+
+.nav-user__name {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.site-nav a.nav-user:hover {
+    color: var(--lime);
+}
+
+.site-nav a.nav-user:hover .nav-user__avatar {
+    border-color: var(--lime);
+}
+
 /* Hero ------------------------------------------------------------------- */
 
 .hero {
