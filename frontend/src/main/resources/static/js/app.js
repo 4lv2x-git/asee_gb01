@@ -81,55 +81,46 @@ async function loadFestivals() {
 
 async function loadArtists() {
     const grid = document.querySelector("#artistGrid");
-    const localArtists = [
-        { name: "Charlotte de Witte", genre: "Techno", image: "images/Charlotte_de_Witte.png" },
-        { name: "Amelie Lens", genre: "Techno", image: "images/Amelie_Lens.jpg" },
-        { name: "Boris Brejcha", genre: "High-Tech Minimal", image: "images/Boris_Brejcha.jpg" },
-        { name: "Adam Beyer", genre: "Techno", image: "images/Adam_Beyer.webp" },
-        { name: "Carl Cox", genre: "House & Techno", image: "images/Carl_Cox.jpg" },
-        { name: "Nina Kraviz", genre: "Techno", image: "images/Nina_Kraviz.jpg" }
-    ];
     try {
         const artists = await api("/api/gateway/artists");
+        if (!Array.isArray(artists)) {
+            throw new Error("Respuesta de artistas no válida");
+        }
         if (!artists.length) {
-            grid.innerHTML = localArtists.map(artist => `
-                <article class="artist-card">
-                    <img src="${artist.image}" alt="${artist.name}">
-                    <div><h3>${artist.name}</h3><p>${artist.genre}</p></div>
-                </article>
-            `).join("");
+            grid.innerHTML = `
+                <div class="empty-state empty-state--wide">
+                    <strong>Aún no hay artistas publicados</strong>
+                    <p>El catálogo aparecerá aquí cuando se publiquen artistas.</p>
+                    <a href="/artistas">Ver catálogo de artistas</a>
+                </div>
+            `;
             return;
         }
-        grid.innerHTML = artists.map((artist, index) => {
-            const localImages = [
-                "images/Adam_Beyer.webp", "images/Amelie_Lens.jpg", "images/Boris_Brejcha.jpg",
-                "images/Carl_Cox.jpg", "images/Charlotte_de_Witte.png", "images/Nina_Kraviz.jpg"
-            ];
+        grid.innerHTML = artists.map(artist => {
+            const name = artist.nombre || artist.name || "Artista";
+            const image = artist.imagen || artist.imageUrl || artist.image || "images/logoPrincipal.png";
+            const detailUrl = artist.id
+                ? `/artistas/${encodeURIComponent(artist.id)}`
+                : "/artistas";
             return `
                 <article class="artist-card">
-                    <img src="${escapeHtml(artist.imageUrl || localImages[index % localImages.length])}" alt="${escapeHtml(artist.name || artist.nombre)}">
+                    <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}">
                     <div>
-                        <h3>${escapeHtml(artist.name || artist.nombre)}</h3>
-                        <p>${escapeHtml(artist.genre || artist.genero || "Live act")}</p>
+                        <h3><a href="${escapeHtml(detailUrl)}">${escapeHtml(name)}</a></h3>
+                        <p>Artista del festival</p>
                     </div>
                 </article>
             `;
         }).join("");
-    } catch (error) {
-        const localArtists = [
-            ["Charlotte de Witte", "Techno", "images/Charlotte_de_Witte.png"],
-            ["Amelie Lens", "Techno", "images/Amelie_Lens.jpg"],
-            ["Boris Brejcha", "High-Tech Minimal", "images/Boris_Brejcha.jpg"],
-            ["Adam Beyer", "Techno", "images/Adam_Beyer.webp"],
-            ["Carl Cox", "House & Techno", "images/Carl_Cox.jpg"],
-            ["Nina Kraviz", "Techno", "images/Nina_Kraviz.jpg"]
-        ];
-        grid.innerHTML = localArtists.map(([name, genre, image]) => `
-            <article class="artist-card">
-                <img src="${image}" alt="${name}">
-                <div><h3>${name}</h3><p>${genre}</p></div>
-            </article>
-        `).join("");
+    } catch {
+        grid.innerHTML = `
+            <div class="empty-state empty-state--error empty-state--wide">
+                <strong>No se pudo cargar el catálogo de artistas</strong>
+                <p>Comprueba que el servicio de artistas esté disponible.</p>
+                <button class="btn btn--ghost" type="button" id="retryArtists">Reintentar</button>
+            </div>
+        `;
+        grid.querySelector("#retryArtists").addEventListener("click", loadArtists);
     }
 }
 

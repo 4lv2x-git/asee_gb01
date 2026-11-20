@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" th:content="${artist.biografia}">
+    <title th:text="${artist.nombre + ' · Subsonic Festival'}">Artista · Subsonic Festival</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/artists-blog.css}">
+</head>
+<body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<header th:replace="~{fragments/navigation :: siteHeader}"></header>
+<main id="contenido" class="detail-page container">
+    <a class="back-link" th:href="@{/artistas}">← Volver a artistas</a>
+    <section class="artist-profile">
+        <div class="artist-profile__image">
+            <img th:if="${!#strings.isEmpty(artist.imagen)}" th:src="${artist.imagen}"
+                 th:alt="${'Imagen de ' + artist.nombre}">
+            <span class="catalog-card__placeholder" th:if="${#strings.isEmpty(artist.imagen)}"
+                  aria-hidden="true">S</span>
+        </div>
+        <div class="artist-profile__intro">
+            <p class="eyebrow"><span class="eyebrow__dot"></span> Artista del festival</p>
+            <h1 th:text="${artist.nombre}">Nombre del artista</h1>
+            <p class="artist-profile__biography" th:text="${artist.biografia}">Biografía del artista</p>
+            <div class="social-links" th:if="${artist.redesSociales.instagram != null or artist.redesSociales.twitter != null or artist.redesSociales.web != null}">
+                <a th:if="${artist.redesSociales.instagram != null}" th:href="${artist.redesSociales.instagram}"
+                   target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a th:if="${artist.redesSociales.twitter != null}" th:href="${artist.redesSociales.twitter}"
+                   target="_blank" rel="noopener noreferrer">Twitter</a>
+                <a th:if="${artist.redesSociales.web != null}" th:href="${artist.redesSociales.web}"
+                   target="_blank" rel="noopener noreferrer">Web oficial</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="detail-columns">
+        <section class="detail-panel" aria-labelledby="songs-heading">
+            <p class="eyebrow">Multimedia</p>
+            <h2 id="songs-heading">Canciones destacadas</h2>
+            <ol class="song-list" th:if="${!#lists.isEmpty(songs)}">
+                <li th:each="song : ${songs}">
+                    <div>
+                        <strong th:text="${song.titulo}">Canción</strong>
+                        <span th:if="${!#strings.isEmpty(song.album)}" th:text="${song.album}">Álbum</span>
+                    </div>
+                    <a th:if="${!#strings.isEmpty(song.uriSpotify)}" th:href="${song.uriSpotify}"
+                       target="_blank" rel="noopener noreferrer" aria-label="Abrir referencia de la canción">↗</a>
+                </li>
+            </ol>
+            <p class="muted-copy" th:if="${#lists.isEmpty(songs)}">No hay canciones destacadas publicadas.</p>
+        </section>
+
+        <section class="detail-panel" aria-labelledby="events-heading">
+            <p class="eyebrow">En el festival</p>
+            <h2 id="events-heading">Eventos vinculados</h2>
+            <ul class="event-id-list" th:if="${!#lists.isEmpty(artist.eventosVinculados)}">
+                <li th:each="eventId : ${artist.eventosVinculados}" th:text="${eventId}">ID del evento</li>
+            </ul>
+            <p class="muted-copy" th:if="${#lists.isEmpty(artist.eventosVinculados)}">
+                No hay eventos vinculados publicados.
+            </p>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments/navigation :: siteFooter}"></footer>
+</body>
+</html>
