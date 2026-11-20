@@ -27,7 +27,8 @@ frontend/
 ├── README.md
 └── src/main/
     ├── java/com/subsonicfestival/frontend/
-    │   ├── FrontendApplication.java              # Punto de entrada de Spring Boot
+    │   ├── FrontendApplication.java     # Punto de entrada de Spring Boot
+    │   └── GatewayController.java       # Proxy hacia los microservicios
     │   └── web/
     │       ├── AuthController.java               # /login, /registro, /recuperar, /restablecer, /logout
     │       ├── PerfilController.java             # /perfil y acciones del área personal
@@ -52,15 +53,20 @@ frontend/
         │   ├── admin-password.html
         │   ├── confirmar-eliminar.html
         │   └── fragments/
-        │       └── comun.html                    # Cabeceras, pie y alertas compartidas
+        │       └── comun.html           # Cabeceras, pie y alertas compartidas
         └── static/
-            ├── index.html
+            ├── index.html               # Página principal
+            ├── tienda.html              # Tienda conectada al inventario
+            ├── pedidos.html             # Historial y detalle de pedidos
             ├── css/
-            │   ├── styles.css                    # Estilos de la página principal
-            │   └── account.css                   # Acceso, perfil y administración
+            │   ├── styles.css           # Estilos de la página principal
+            │   └── account.css          # Acceso, perfil y administración
             └── js/
-                ├── site.js                       # Acceso al perfil en la portada según la sesión
-                └── cuenta.js                     # Mostrar u ocultar contraseñas en las páginas de cuenta
+                ├── site.js              # Acceso al perfil en la portada según la sesión
+                ├── cuenta.js            # Mostrar u ocultar contraseñas en las páginas de cuenta
+                ├── commerce.js          # Utilidades de tienda, carrito y sesión
+                ├── tienda.js            # Catálogo, carrito y checkout
+                └── pedidos.js           # Pedidos, entradas y cancelaciones
 ```
 
 ## Requisitos

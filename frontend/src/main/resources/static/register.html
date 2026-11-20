@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear cuenta · Subsonic Festival</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+    <canvas id="neural-glow-canvas" aria-hidden="true"></canvas>
+    <header class="auth-topbar">
+        <a class="logo" href="/" aria-label="Subsonic Festival">
+            <img class="logo__image" src="images/logoPrincipal.png" alt="">
+            <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+        </a>
+        <nav aria-label="Volver"><a href="/">Inicio</a><a href="/festivales.html">Festivales</a></nav>
+    </header>
+    <div class="auth-orb auth-orb--one"></div>
+    <div class="auth-orb auth-orb--two"></div>
+    <main class="auth-layout">
+        <section class="auth-card">
+            <a class="auth-logo" href="/" aria-label="Volver al inicio">
+                <img src="images/logoPrincipal.png" alt="Subsonic Festival">
+            </a>
+            <p class="eyebrow">Subsonic</p>
+            <h1>Crear cuenta</h1>
+            <p class="auth-intro">Regístrate para guardar tus entradas y pedidos.</p>
+
+            <button class="google-button" type="button" id="googleRegister">
+                <span aria-hidden="true">G</span>
+                Registrarse con Google
+            </button>
+            <div class="auth-divider"><span>o</span></div>
+
+            <form id="registerForm" class="auth-form">
+                <label for="registerName">Nombre</label>
+                <input id="registerName" type="text" autocomplete="name" required>
+                <label for="registerEmail">Correo electrónico</label>
+                <input id="registerEmail" type="email" autocomplete="email" required>
+                <label for="registerPassword">Contraseña</label>
+                <div class="auth-password">
+                    <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>
+                    <button type="button" id="togglePassword" aria-label="Mostrar contraseña">
+                        <img src="images/OjoCerrado.png" alt="">
+                    </button>
+                </div>
+                <label for="registerRole">Tipo de cuenta</label>
+                <select id="registerRole" required>
+                    <option value="">Selecciona un tipo de cuenta</option>
+                    <option value="cliente">Cliente</option>
+                    <option value="proveedor">Proveedor</option>
+                    <option value="gestor">Gestor</option>
+                </select>
+                <div id="providerFields" class="provider-fields" hidden>
+                    <label for="providerService">Tipo de servicio</label>
+                    <input id="providerService" type="text" placeholder="Música, eventos, restauración...">
+                </div>
+                <button class="btn btn--primary btn--full" type="submit">Crear cuenta</button>
+                <p id="registerMessage" class="form-message" aria-live="polite"></p>
+            </form>
+
+            <p class="auth-switch">¿Ya tienes una cuenta? <a href="/login.html">Inicia sesión</a></p>
+        </section>
+    </main>
+    <script src="js/neural-glow.js"></script>
+    <script src="js/auth-pages.js"></script>
+</body>
+</html>
