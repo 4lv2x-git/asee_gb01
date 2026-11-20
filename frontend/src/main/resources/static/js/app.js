@@ -265,7 +265,7 @@ function currentUserId() {
 
 function updateAccountLink() {
     const link = document.querySelector("#accountLink");
-    if (link) link.href = state.token ? "/pedidos.html" : "/login.html";
+    if (link) link.href = state.token ? "/pedidos.html" : "/cuenta";
 }
 
 function persistCart() {

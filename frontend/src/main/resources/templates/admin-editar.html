@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Editar usuario · Subsonic Festival 2027', 'Edición de los datos de una cuenta de Subsonic Festival 2027.')}"></head>
+<body>
+<a class="skip-link" href="#editar-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraCuenta('admin')}"></header>
+
+<main class="app-main" id="editar-main">
+    <div class="container form-page">
+        <div th:replace="~{fragments/comun :: alertas}"></div>
+
+        <header class="page-head">
+            <div>
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Administración</p>
+                <h1>Editar usuario</h1>
+                <p>Modifica los datos de la cuenta. El correo y el rol no se pueden cambiar.</p>
+            </div>
+            <div class="page-head__actions">
+                <a class="btn btn--ghost btn--small" th:href="@{/admin}">Volver al panel</a>
+            </div>
+        </header>
+
+        <section class="panel" aria-labelledby="editar-title">
+            <div class="dialog-user">
+                <span class="dialog-user__avatar"
+                      th:classappend="${'role-' + (objetivo.rol != null ? objetivo.rol : 'visitante')}"
+                      aria-hidden="true" th:text="${@textos.iniciales(objetivo.nombre)}">?</span>
+                <span class="dialog-user__text">
+                    <strong th:text="${objetivo.nombre}">Nombre</strong>
+                    <span>
+                        <span th:text="${objetivo.correo}">correo@ejemplo.com</span>
+                        · <span th:text="${@textos.rol(objetivo.rol)}">Cliente</span>
+                    </span>
+                </span>
+            </div>
+
+            <form class="form dialog-form" th:action="@{/admin/{id}/editar(id=${objetivo.id})}"
+                  th:object="${adminEdicionForm}" method="post" novalidate>
+                <h2 id="editar-title" class="form-section-title">Datos de la cuenta</h2>
+
+                <div class="field">
+                    <label for="edit-user-name">Nombre completo</label>
+                    <input id="edit-user-name" type="text" th:field="*{nombre}"
+                           th:errorclass="is-invalid" autocomplete="off" required>
+                    <p class="field__error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">El nombre es obligatorio.</p>
+                </div>
+
+                <div class="field">
+                    <label for="edit-user-address">Dirección</label>
+                    <input id="edit-user-address" type="text" th:field="*{direccion}"
+                           autocomplete="off" placeholder="Calle, número, ciudad">
+                </div>
+
+                <div th:if="${objetivo.esProveedor()}">
+                    <div class="field">
+                        <label for="edit-user-service">Tipo de servicio</label>
+                        <input id="edit-user-service" type="text" th:field="*{tipoServicio}"
+                               th:errorclass="is-invalid" th:required="${objetivo.esProveedor()}" autocomplete="off">
+                        <p class="field__error" th:if="${#fields.hasErrors('tipoServicio')}" th:errors="*{tipoServicio}">Indica el tipo de servicio.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="edit-user-description">Descripción del servicio</label>
+                        <textarea id="edit-user-description" th:field="*{descripcionServicio}" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <p class="form-note">
+                    Los cambios se guardan directamente en la cuenta del usuario.
+                </p>
+
+                <div class="form-actions">
+                    <a class="btn btn--ghost" th:href="@{/admin}">Cancelar</a>
+                    <button type="submit" class="btn btn--primary">Guardar cambios</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

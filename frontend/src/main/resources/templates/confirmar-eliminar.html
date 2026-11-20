@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Confirmar eliminación · Subsonic Festival 2027', 'Confirmación de eliminación de una cuenta de Subsonic Festival 2027.')}"></head>
+<body>
+<a class="skip-link" href="#confirmar-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraCuenta(${ambito == 'admin' ? 'admin' : 'perfil'})}"></header>
+
+<main class="app-main" id="confirmar-main">
+    <div class="container form-page">
+        <div th:replace="~{fragments/comun :: alertas}"></div>
+
+        <header class="page-head">
+            <div>
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Confirmación</p>
+                <h1 th:text="${titulo}">Eliminar cuenta</h1>
+                <p>Revisa la información antes de continuar. Esta acción no se puede deshacer.</p>
+            </div>
+        </header>
+
+        <section class="panel danger-zone" aria-labelledby="confirmar-title">
+            <div class="dialog-user">
+                <span class="dialog-user__avatar"
+                      th:classappend="${'role-' + (objetivo.rol != null ? objetivo.rol : 'visitante')}"
+                      aria-hidden="true" th:text="${@textos.iniciales(objetivo.nombre)}">?</span>
+                <span class="dialog-user__text">
+                    <strong th:text="${objetivo.nombre}">Nombre</strong>
+                    <span>
+                        <span th:text="${objetivo.correo}">correo@ejemplo.com</span>
+                        · <span th:text="${@textos.rol(objetivo.rol)}">Cliente</span>
+                    </span>
+                </span>
+            </div>
+
+            <h2 id="confirmar-title" class="form-section-title">¿Eliminar esta cuenta?</h2>
+            <p th:text="${aviso}">La cuenta se eliminará de forma permanente.</p>
+
+            <form th:action="${accion}" method="post" class="form-actions">
+                <a class="btn btn--ghost" th:href="${volver}">Cancelar</a>
+                <button type="submit" class="btn btn--danger" th:text="${etiquetaAccion}">Eliminar definitivamente</button>
+            </form>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

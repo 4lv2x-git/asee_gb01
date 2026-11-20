@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Mi perfil · Subsonic Festival 2027', 'Gestiona tu perfil de Subsonic Festival 2027: datos personales, correo verificado y cuenta.')}"></head>
+<body>
+<a class="skip-link" href="#perfil-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraCuenta('perfil')}"></header>
+
+<main class="app-main" id="perfil-main">
+    <div class="container">
+        <div th:replace="~{fragments/comun :: alertas}"></div>
+
+        <header class="page-head">
+            <div>
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Área personal</p>
+                <h1>Mi perfil</h1>
+                <p>Consulta y actualiza los datos asociados a tu cuenta de Subsonic Festival.</p>
+            </div>
+            <div class="page-head__meta" aria-label="Resumen de la cuenta">
+                <span class="badge"
+                      th:classappend="${'badge--' + (usuario.rol != null ? usuario.rol : 'visitante')}"
+                      th:text="${@textos.rol(usuario.rol)}">Cliente</span>
+                <span class="badge"
+                      th:classappend="${usuario.estado == 'suspendido' ? 'badge--suspendido' : 'badge--activo'}"
+                      th:text="${@textos.estado(usuario.estado)}">Activo</span>
+            </div>
+        </header>
+
+        <div class="profile-grid">
+            <aside class="panel identity-card" aria-labelledby="identity-name">
+                <div class="identity-card__head">
+                    <span class="identity-card__avatar" aria-hidden="true" th:text="${iniciales}">?</span>
+                    <div>
+                        <h2 id="identity-name" th:text="${usuario.nombre}">Tu cuenta</h2>
+                        <p class="identity-card__email" th:text="${usuario.correo}">—</p>
+                    </div>
+                </div>
+
+                <div class="identity-card__badges">
+                    <span class="badge badge--activo" th:if="${usuario.emailVerificado}">Verificado</span>
+                    <span class="badge badge--warning" th:unless="${usuario.emailVerificado}">Sin verificar</span>
+                </div>
+
+                <dl class="detail-list">
+                    <div>
+                        <dt>Rol</dt>
+                        <dd th:text="${@textos.rol(usuario.rol)}">Cliente</dd>
+                    </div>
+                    <div>
+                        <dt>Estado</dt>
+                        <dd th:text="${@textos.estado(usuario.estado)}">Activo</dd>
+                    </div>
+                    <div>
+                        <dt>Correo</dt>
+                        <dd th:text="${usuario.emailVerificado ? 'Verificado' : 'Pendiente'}">Pendiente</dd>
+                    </div>
+                    <div th:if="${usuario.esProveedor()}">
+                        <dt>Servicio</dt>
+                        <dd th:text="${usuario.tipoServicio != null and !usuario.tipoServicio.isBlank() ? usuario.tipoServicio : 'Sin especificar'}">Sin especificar</dd>
+                    </div>
+                    <div>
+                        <dt>ID de cuenta</dt>
+                        <dd class="detail-list__mono" th:text="${usuario.id}">—</dd>
+                    </div>
+                </dl>
+
+                <p class="identity-description"
+                   th:if="${usuario.esProveedor() and usuario.descripcionServicio != null and !usuario.descripcionServicio.isBlank()}"
+                   th:text="${usuario.descripcionServicio}"></p>
+
+                <section class="verify-panel" th:unless="${usuario.emailVerificado}" aria-labelledby="verify-title">
+                    <h3 id="verify-title">Verifica tu correo</h3>
+                    <p>
+                        Introduce el código que recibiste al registrarte para confirmar tu dirección.
+                        Si no lo recibiste, contacta con el equipo del festival.
+                    </p>
+                    <form class="verify-form" th:action="@{/perfil/verificar}" th:object="${verificacionForm}" method="post" novalidate>
+                        <div class="field">
+                            <label class="sr-only" for="verify-code">Código de verificación</label>
+                            <input id="verify-code" type="text" th:field="*{codigo}"
+                                   th:errorclass="is-invalid" placeholder="Código de verificación" autocomplete="one-time-code" required>
+                            <p class="field__error" th:if="${#fields.hasErrors('codigo')}" th:errors="*{codigo}">Introduce el código recibido.</p>
+                        </div>
+                        <button class="btn btn--primary btn--small" type="submit">Verificar</button>
+                    </form>
+                </section>
+            </aside>
+
+            <div class="stack">
+                <section class="panel panel-section" aria-labelledby="profile-data-title">
+                    <header class="panel-head">
+                        <h2 id="profile-data-title">Datos personales</h2>
+                        <p>El correo y el rol de la cuenta no se pueden modificar desde aquí.</p>
+                    </header>
+
+                    <form class="form profile-form" th:action="@{/perfil}" th:object="${perfilForm}" method="post" novalidate>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="profile-name">Nombre completo</label>
+                                <input id="profile-name" type="text" th:field="*{nombre}"
+                                       th:errorclass="is-invalid" autocomplete="name" required>
+                                <p class="field__error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">El nombre es obligatorio.</p>
+                            </div>
+
+                            <div class="field">
+                                <label for="profile-address">Dirección</label>
+                                <input id="profile-address" type="text" th:field="*{direccion}"
+                                       placeholder="Calle, número, ciudad" autocomplete="street-address">
+                            </div>
+                        </div>
+
+                        <div th:if="${usuario.esProveedor()}">
+                            <div class="form-grid">
+                                <div class="field form-grid__full">
+                                    <label for="profile-service">Tipo de servicio</label>
+                                    <input id="profile-service" type="text" th:field="*{tipoServicio}"
+                                           th:errorclass="is-invalid" th:required="${usuario.esProveedor()}"
+                                           placeholder="Ej. comida, sonido, merchandising">
+                                    <p class="field__error" th:if="${#fields.hasErrors('tipoServicio')}" th:errors="*{tipoServicio}">Indica el tipo de servicio.</p>
+                                </div>
+
+                                <div class="field form-grid__full">
+                                    <label for="profile-description">Descripción del servicio</label>
+                                    <textarea id="profile-description" th:field="*{descripcionServicio}" rows="4"
+                                              placeholder="Describe brevemente tu servicio y tus necesidades."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn--primary" type="submit">Guardar cambios</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="panel panel-section" aria-labelledby="security-title">
+                    <h2 id="security-title">Seguridad</h2>
+                    <p>
+                        Para cambiar tu contraseña necesitas un código de recuperación. Los tokens
+                        anteriores se invalidan automáticamente al establecer una nueva.
+                    </p>
+                    <a class="btn btn--ghost" th:href="@{/login(vista='recuperar')}">Cambiar contraseña</a>
+                </section>
+
+                <section class="panel panel-section danger-zone" aria-labelledby="delete-title">
+                    <h3 id="delete-title">Eliminar cuenta</h3>
+                    <p>
+                        Da de baja tu cuenta de forma permanente. Se borrarán tus datos y se cerrarán
+                        todas las sesiones activas.
+                    </p>
+                    <a class="btn btn--danger" th:href="@{/perfil/eliminar}">Eliminar mi cuenta</a>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

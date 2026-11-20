@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Artistas · Panel de administración · Subsonic Festival 2027', 'Fichas de artistas del cartel en el panel de administración de Subsonic Festival 2027.')}"></head>
+<body>
+<a class="skip-link" href="#admin-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraCuenta('admin')}"></header>
+
+<main class="app-main" id="admin-main">
+    <div class="container">
+        <div th:replace="~{fragments/comun :: alertas}"></div>
+
+        <header class="page-head">
+            <div>
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Administración</p>
+                <h1>Artistas del cartel</h1>
+                <p>
+                    Consulta las fichas publicadas por el servicio Artists &amp; Blog: biografía,
+                    eventos vinculados, canciones destacadas y enlaces oficiales. La edición de
+                    fichas se realiza en el microservicio.
+                </p>
+            </div>
+            <div class="page-head__actions">
+                <a class="btn btn--ghost btn--small" th:href="@{/admin/artistas}">Actualizar</a>
+            </div>
+        </header>
+
+        <section class="stat-grid" aria-label="Resumen de artistas">
+            <article class="stat-card stat-card--lime">
+                <span class="stat-card__label">Artistas</span>
+                <strong th:text="${totalArtistas}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Con imagen</span>
+                <strong th:text="${conImagen}">0</strong>
+            </article>
+            <article class="stat-card stat-card--cyan">
+                <span class="stat-card__label">Con biografía</span>
+                <strong th:text="${conBiografia}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Con eventos</span>
+                <strong th:text="${conEventos}">0</strong>
+            </article>
+            <article class="stat-card stat-card--pink">
+                <span class="stat-card__label">Con canciones</span>
+                <strong th:text="${conCanciones}">0</strong>
+            </article>
+        </section>
+
+        <div class="admin-layout">
+            <aside th:replace="~{fragments/comun :: adminModulos('artistas', null, null, null, ${totalArtistas})}"></aside>
+
+            <section class="panel admin-users" id="artistas" aria-labelledby="artists-title">
+                <header class="panel-head">
+                    <h2 id="artists-title">Fichas de artistas</h2>
+                    <p>
+                        Listado de solo lectura. Pulsa «Ver ficha» para abrir la vista pública
+                        del artista con todas las canciones y los eventos asociados.
+                    </p>
+                </header>
+
+                <form class="table-toolbar" th:action="@{/admin/artistas}" method="get" role="search">
+                    <div class="field">
+                        <label for="artist-search">Buscar</label>
+                        <input id="artist-search" type="search" name="q" th:value="${q}"
+                               placeholder="Nombre, ID o biografía" autocomplete="off">
+                    </div>
+
+                    <button class="btn btn--ghost" type="submit">Filtrar</button>
+                    <a class="btn btn--ghost" th:href="@{/admin/artistas}">Limpiar</a>
+                </form>
+
+                <div class="table-wrap" th:if="${!#lists.isEmpty(fichas)}">
+                    <table class="data-table">
+                        <caption class="sr-only">Artistas registrados en Subsonic Festival</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Artista</th>
+                                <th scope="col">Biografía</th>
+                                <th scope="col">Eventos</th>
+                                <th scope="col">Canciones</th>
+                                <th scope="col">Enlaces</th>
+                                <th scope="col"><span class="sr-only">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="ficha : ${fichas}">
+                                <td>
+                                    <div class="user-cell">
+                                        <span class="user-cell__avatar role-proveedor" aria-hidden="true"
+                                              th:text="${@textos.iniciales(ficha.nombre)}">A</span>
+                                        <span class="user-cell__text">
+                                            <strong th:text="${ficha.nombre}">Artista</strong>
+                                            <span class="mono" th:title="${ficha.id}"
+                                                  th:text="${#strings.length(ficha.id) > 12 ? #strings.substring(ficha.id, #strings.length(ficha.id) - 12) : ficha.id}">id</span>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:if="${!ficha.biografia.isEmpty()}"
+                                          th:title="${ficha.biografia}"
+                                          th:text="${#strings.abbreviate(ficha.biografia, 72)}">Biografía</span>
+                                    <span class="muted" th:unless="${!ficha.biografia.isEmpty()}">Sin biografía</span>
+                                </td>
+                                <td th:text="${ficha.eventosVinculados}">0</td>
+                                <td th:text="${ficha.canciones}">0</td>
+                                <td>
+                                    <span class="row-actions">
+                                        <a th:each="enlace : ${ficha.enlaces}"
+                                           class="badge badge--activo"
+                                           th:href="${enlace.url}"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           th:text="${enlace.etiqueta}">Enlace</a>
+                                        <span class="muted" th:if="${#lists.isEmpty(ficha.enlaces)}">—</span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a class="btn btn--table" th:href="@{/artistas/{id}(id=${ficha.id})}">Ver ficha</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(fichas)}">
+                    <strong th:if="${error != null}">No se han podido cargar los artistas.</strong>
+                    <strong th:unless="${error != null}">No hay artistas que coincidan con la búsqueda.</strong>
+                    <span th:if="${error == null}">Prueba con otro término o limpia el filtro.</span>
+                </div>
+
+                <p class="table-foot" th:if="${filtrado}"
+                   th:text="|Mostrando ${#lists.size(fichas)} de ${totalArtistas} artistas.|">Mostrando 0 de 0 artistas.</p>
+                <p class="table-foot" th:unless="${filtrado}"
+                   th:text="|${totalArtistas} ${totalArtistas == 1 ? 'artista registrado' : 'artistas registrados'}.|">0 artistas registrados.</p>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

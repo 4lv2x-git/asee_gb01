@@ -280,6 +280,7 @@ section[id] {
 
 .site-nav {
     display: flex;
+    align-items: center;
     gap: 28px;
 }
 
@@ -310,6 +311,51 @@ section[id] {
 
 .site-nav a:hover::after {
     transform: scaleX(1);
+}
+
+/* Acceso con sesión iniciada (portada) ------------------------------------ */
+
+.site-nav a.nav-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--ink);
+    font-weight: 500;
+}
+
+.site-nav a.nav-user::after {
+    display: none;
+}
+
+.nav-user__avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--panel);
+    color: var(--lime);
+    font-family: var(--display);
+    font-size: 16px;
+    line-height: 1;
+    transition: border-color 0.2s ease;
+}
+
+.nav-user__name {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.site-nav a.nav-user:hover {
+    color: var(--lime);
+}
+
+.site-nav a.nav-user:hover .nav-user__avatar {
+    border-color: var(--lime);
 }
 
 /* Hero ------------------------------------------------------------------- */
@@ -1918,66 +1964,6 @@ section[id] {
 
 .auth-switch a {
     color: #55e6ff;
-}
-
-.auth-orb {
-    position: fixed;
-    z-index: 1;
-    width: 420px;
-    height: 420px;
-    border-radius: 50%;
-    filter: blur(38px);
-    opacity: 0.32;
-    pointer-events: none;
-    transition: transform 0.12s linear;
-}
-
-.auth-orb--one {
-    left: -130px;
-    bottom: 5%;
-    background: #124ed0;
-}
-
-.auth-orb--two {
-    right: -180px;
-    top: 8%;
-    background: #0bb4ff;
-}
-
-#neural-glow-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-
-.auth-topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 5;
-    min-height: 76px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    border-bottom: 1px solid rgba(245, 241, 232, 0.12);
-    background: rgba(7, 7, 9, 0.72);
-    backdrop-filter: blur(16px);
-}
-
-.auth-topbar nav {
-    display: flex;
-    gap: 18px;
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.auth-topbar nav a:first-child {
-    color: var(--lime);
 }
 
 .auth-layout {

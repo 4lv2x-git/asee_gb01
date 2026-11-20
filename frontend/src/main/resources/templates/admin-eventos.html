@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Eventos · Panel de administración · Subsonic Festival 2027', 'Consulta de festivales y eventos del panel de administración de Subsonic Festival 2027.')}"></head>
+<body>
+<a class="skip-link" href="#admin-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraCuenta('admin')}"></header>
+
+<main class="app-main" id="admin-main">
+    <div class="container">
+        <div th:replace="~{fragments/comun :: alertas}"></div>
+
+        <header class="page-head">
+            <div>
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Administración</p>
+                <h1>Eventos y festivales</h1>
+                <p>
+                    Consulta los festivales creados en <span class="mono">service-festivals</span>,
+                    revisa sus fechas, ubicaciones y aforo, y detecta los que siguen en borrador o
+                    han sido cancelados.
+                </p>
+            </div>
+            <div class="page-head__actions">
+                <a class="btn btn--ghost btn--small" th:href="@{/admin/eventos}">Actualizar</a>
+            </div>
+        </header>
+
+        <section class="stat-grid" aria-label="Resumen de eventos">
+            <article class="stat-card stat-card--lime">
+                <span class="stat-card__label">Eventos totales</span>
+                <strong th:text="${totalEventos}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Publicados</span>
+                <strong th:text="${publicados}">0</strong>
+            </article>
+            <article class="stat-card stat-card--cyan">
+                <span class="stat-card__label">Borradores</span>
+                <strong th:text="${borradores}">0</strong>
+            </article>
+            <article class="stat-card stat-card--pink">
+                <span class="stat-card__label">Cancelados</span>
+                <strong th:text="${cancelados}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Aforo sumado</span>
+                <strong th:text="${#numbers.formatInteger(aforoTotal, 0, 'POINT')}">0</strong>
+            </article>
+        </section>
+
+        <div class="admin-layout">
+            <aside th:replace="~{fragments/comun :: adminModulos('eventos', null, ${totalEventos}, null, null)}"></aside>
+
+            <section class="panel admin-users" id="eventos" aria-labelledby="events-title">
+                <header class="panel-head">
+                    <h2 id="events-title">Festivales registrados</h2>
+                    <p>
+                        Listado de solo lectura. La creación y edición de eventos se gestiona en el
+                        servicio de festivales; aquí puedes supervisar el estado del cartel.
+                    </p>
+                </header>
+
+                <form class="table-toolbar" th:action="@{/admin/eventos}" method="get" role="search">
+                    <div class="field">
+                        <label for="event-search">Buscar</label>
+                        <input id="event-search" type="search" name="q" th:value="${q}"
+                               placeholder="Nombre, ciudad, país o ID" autocomplete="off">
+                    </div>
+
+                    <div class="field">
+                        <label for="filter-event-state">Estado</label>
+                        <select id="filter-event-state" name="estado">
+                            <option value="all" th:selected="${estadoFiltro == 'all'}">Todos</option>
+                            <option value="publicado" th:selected="${estadoFiltro == 'publicado'}">Publicados</option>
+                            <option value="borrador" th:selected="${estadoFiltro == 'borrador'}">Borradores</option>
+                            <option value="cancelado" th:selected="${estadoFiltro == 'cancelado'}">Cancelados</option>
+                            <option value="finalizado" th:selected="${estadoFiltro == 'finalizado'}">Finalizados</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn--ghost" type="submit">Filtrar</button>
+                    <a class="btn btn--ghost" th:href="@{/admin/eventos}">Limpiar</a>
+                </form>
+
+                <div class="table-wrap" th:if="${!#lists.isEmpty(eventosFiltrados)}">
+                    <table class="data-table">
+                        <caption class="sr-only">Festivales registrados en Subsonic Festival</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Evento</th>
+                                <th scope="col">Ubicación</th>
+                                <th scope="col">Fechas</th>
+                                <th scope="col">Aforo</th>
+                                <th scope="col">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="e : ${eventosFiltrados}">
+                                <td>
+                                    <div class="user-cell">
+                                        <span class="user-cell__avatar role-admin" aria-hidden="true"
+                                              th:text="${#strings.substring(e.nombre != null and !e.nombre.isBlank() ? e.nombre : 'E', 0, 1)}">E</span>
+                                        <span class="user-cell__text">
+                                            <strong th:text="${e.nombre != null and !e.nombre.isBlank() ? e.nombre : 'Evento sin nombre'}">Evento</strong>
+                                            <span class="mono" th:title="${e.id}"
+                                                  th:text="${e.id != null and #strings.length(e.id) > 12 ? #strings.substring(e.id, #strings.length(e.id) - 12) : e.id}">id</span>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:if="${e.ubicacion != null and e.ubicacion.ciudad != null}"
+                                          th:text="${e.ubicacion.ciudad + (e.ubicacion.pais != null and !e.ubicacion.pais.isBlank() ? ', ' + e.ubicacion.pais : '')}">Madrid</span>
+                                    <span class="muted" th:unless="${e.ubicacion != null and e.ubicacion.ciudad != null}">Sin ubicación</span>
+                                </td>
+                                <td>
+                                    <span th:text="${@textos.fechaCorta(e.fechaInicio)}">18 jun 2027</span>
+                                    <span class="muted" th:if="${e.fechaFin != null and e.fechaFin != e.fechaInicio}"
+                                          th:text="${' → ' + @textos.fechaCorta(e.fechaFin)}"> → 20 jun 2027</span>
+                                </td>
+                                <td>
+                                    <span th:if="${e.aforo != null}"
+                                          th:text="${#numbers.formatInteger(e.aforo, 0, 'POINT')}">0</span>
+                                    <span class="muted" th:unless="${e.aforo != null}">—</span>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${'badge--' + @textos.claseEstadoEvento(e.estado)}"
+                                          th:text="${@textos.estadoEvento(e.estado)}">Publicado</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(eventosFiltrados)}">
+                    <strong th:if="${error != null}">No se han podido cargar los eventos.</strong>
+                    <strong th:unless="${error != null}">No hay eventos que coincidan con los filtros.</strong>
+                    <span th:if="${error == null}">Prueba a cambiar la búsqueda o a limpiar los filtros.</span>
+                </div>
+
+                <p class="table-foot" th:if="${filtrado}"
+                   th:text="|Mostrando ${#lists.size(eventosFiltrados)} de ${totalEventos} eventos.|">Mostrando 0 de 0 eventos.</p>
+                <p class="table-foot" th:unless="${filtrado}"
+                   th:text="|${totalEventos} ${totalEventos == 1 ? 'evento registrado' : 'eventos registrados'}.|">0 eventos registrados.</p>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

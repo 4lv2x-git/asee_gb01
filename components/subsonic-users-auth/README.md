@@ -23,7 +23,9 @@ La API queda disponible en `http://localhost:8000`; `/health` responde fuera del
 
 ## Seed admin
 
-El lifespan de FastAPI crea un administrador inicial de forma idempotente. Tambien puede ejecutarse manualmente:
+El lifespan de FastAPI crea un administrador inicial de forma idempotente. `ADMIN_EMAIL` debe usar un dominio de correo valido: el validador de `EmailStr` rechaza dominios reservados como `.local`, por lo que el valor por defecto es `admin@subsonicfestival.com`.
+
+Tambien puede ejecutarse manualmente:
 
 ```bash
 python scripts/seed_admin.py
