@@ -102,15 +102,41 @@
         return payload?.sub || token;
     }
 
+    function currentUser() {
+        const token = getToken();
+        return token ? decodeJwt(token) : null;
+    }
+
+    function currentUserRole() {
+        const role = currentUser()?.rol;
+        return role ? String(role).toLowerCase() : null;
+    }
+
     function authHeaders(extra = {}) {
         const headers = new Headers(extra);
         const token = getToken();
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);
-            const userId = currentUserId();
+            const user = currentUser();
+            const userId = user?.sub;
             if (userId) headers.set("X-User-Id", userId);
+            if (user?.rol) headers.set("X-User-Role", String(user.rol).toLowerCase());
         }
         return headers;
+    }
+
+    function errorMessage(data, status) {
+        if (!data) return `Error ${status}`;
+        if (typeof data === "string") return data;
+        const detail = data.detail;
+        if (Array.isArray(detail)) {
+            const messages = detail
+                .map(item => item?.msg || item?.message || (typeof item === "string" ? item : null))
+                .filter(Boolean);
+            if (messages.length) return messages.join(". ");
+        }
+        if (typeof detail === "string") return detail;
+        return data.mensaje || data.message || data.error || `Error ${status}`;
     }
 
     async function api(path, options = {}) {
@@ -131,7 +157,7 @@
         }
 
         if (!response.ok) {
-            const message = data?.mensaje || data?.message || data?.detail || data?.error || `Error ${response.status}`;
+            const message = errorMessage(data, response.status);
             const error = new Error(message);
             error.status = response.status;
             error.data = data;
@@ -273,6 +299,8 @@
         getToken,
         setToken,
         currentUserId,
+        currentUser,
+        currentUserRole,
         api,
         readCart,
         writeCart,

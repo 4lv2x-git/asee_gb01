@@ -2,7 +2,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Usa un archivo local SQLite (no requiere instalar servidor de base de datos)
+# Usa un archivo local SQLite por defecto (no requiere instalar servidor de base de datos)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./espacios.db")
 
 # Configuración necesaria únicamente para SQLite en FastAPI

@@ -3484,3 +3484,608 @@ section[id] {
     border-color: var(--pink);
     color: var(--pink);
 }
+
+/* ==========================================================================
+   Recintos y espacios (Gestor de Espacios)
+   ========================================================================== */
+
+[hidden] {
+    display: none !important;
+}
+
+.grounds-page {
+    min-height: calc(100vh - 76px);
+}
+
+.grounds-hero__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+}
+
+.grounds-session {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+}
+
+.grounds-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grounds-filters {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.grounds-filters input {
+    width: 116px;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grounds-filters input:focus {
+    border-color: var(--lime);
+    box-shadow: 0 0 0 4px rgba(216, 255, 62, 0.1);
+}
+
+/* Vista previa en la portada --------------------------------------------- */
+
+.ground-home-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 34px;
+}
+
+.ground-home-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.ground-home-card:hover {
+    border-color: rgba(216, 255, 62, 0.38);
+    transform: translateY(-4px);
+}
+
+.ground-home-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.ground-home-card__event {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.ground-home-card h3 {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.ground-home-card__meta {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.ground-home-card .ground-services {
+    margin-bottom: 0;
+}
+
+.ground-home-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.ground-home-card__footer strong {
+    color: var(--lime);
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.ground-home-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+}
+
+@media (max-width: 1024px) {
+    .ground-home-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .ground-home-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ground-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}.ground-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.ground-card:hover {
+    border-color: rgba(216, 255, 62, 0.38);
+    transform: translateY(-5px);
+}
+
+.ground-card__visual {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 184px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--bg-2);
+    background-image:
+        linear-gradient(rgba(245, 241, 232, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 241, 232, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 72% 28%, rgba(216, 255, 62, 0.16), transparent 58%);
+    background-size: 34px 34px, 34px 34px, auto;
+}
+
+.ground-card__visual--b {
+    background-image:
+        linear-gradient(rgba(245, 241, 232, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 241, 232, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 28% 30%, rgba(85, 230, 255, 0.18), transparent 58%);
+}
+
+.ground-card__visual--c {
+    background-image:
+        linear-gradient(rgba(245, 241, 232, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 241, 232, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 60% 70%, rgba(255, 61, 129, 0.16), transparent 58%);
+}
+
+.ground-card__visual::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(7, 7, 9, 0.55));
+    pointer-events: none;
+}
+
+.ground-card__type {
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    left: 14px;
+    max-width: calc(100% - 130px);
+    overflow: hidden;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--lime);
+    color: var(--bg);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ground-card__visual .status-badge {
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    right: 14px;
+    background: rgba(7, 7, 9, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.ground-card__monogram {
+    font-family: var(--display);
+    font-size: 96px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: rgba(245, 241, 232, 0.05);
+    -webkit-text-stroke: 1px rgba(245, 241, 232, 0.22);
+    user-select: none;
+    transition: color 0.3s ease, -webkit-text-stroke-color 0.3s ease;
+}
+
+.ground-card:hover .ground-card__monogram {
+    color: rgba(216, 255, 62, 0.08);
+    -webkit-text-stroke-color: rgba(216, 255, 62, 0.4);
+}
+
+.ground-card__event {
+    position: absolute;
+    z-index: 2;
+    bottom: 12px;
+    left: 16px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.ground-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 22px;
+}
+
+.ground-card__eyebrow {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.ground-card h3 {
+    margin: 8px 0 12px;
+    font-family: var(--display);
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.ground-services {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.ground-service {
+    padding: 5px 9px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.ground-service--more {
+    border-color: rgba(216, 255, 62, 0.35);
+    color: var(--lime);
+}
+
+.ground-card__services-empty {
+    margin-bottom: 18px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.ground-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+}
+
+.ground-card__price {
+    display: flex;
+    align-items: flex-start;
+    gap: 3px;
+    color: var(--lime);
+    font-weight: 700;
+}
+
+.ground-card__price strong {
+    font-family: var(--display);
+    font-size: 34px;
+    font-weight: 400;
+    line-height: 0.8;
+}
+
+.ground-card__price span {
+    padding-top: 3px;
+    font-size: 14px;
+}
+
+.ground-card__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.ground-card__actions .btn {
+    flex: 1;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.ground-card__actions .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.ground-empty p {
+    max-width: 500px;
+    margin: 8px auto 16px;
+}
+
+.ground-empty .btn {
+    justify-self: center;
+}
+
+/* Detalle del espacio ---------------------------------------------------- */
+
+.ground-detail__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 22px 0 4px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.ground-detail__price {
+    display: flex;
+    flex-direction: column;
+}
+
+.ground-detail__price span {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.ground-detail__price strong {
+    font-family: var(--display);
+    font-size: 38px;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--lime);
+}
+
+.ground-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.ground-meta article {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-2);
+}
+
+.ground-meta span {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.ground-meta strong {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+}
+
+.ground-detail__section {
+    margin-top: 24px;
+}
+
+.ground-detail__section h3 {
+    margin-bottom: 12px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.ground-detail__section .ground-services {
+    margin-bottom: 0;
+}
+
+.ground-detail__hint {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.ground-detail__actions {
+    display: grid;
+    gap: 12px;
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+}
+
+.ground-detail__manage {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+}
+
+.ground-detail__manage .btn {
+    flex: 1;
+}
+
+/* Formulario de espacio -------------------------------------------------- */
+
+.ground-form {
+    display: grid;
+    gap: 18px;
+    margin-top: 22px;
+}
+
+.ground-form__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.ground-form__field {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ground-form__field--wide {
+    grid-column: 1 / -1;
+}
+
+.ground-form__field label {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.ground-form__field input,
+.ground-form__field select {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ground-form__field input:focus,
+.ground-form__field select:focus {
+    border-color: var(--lime);
+    box-shadow: 0 0 0 4px rgba(216, 255, 62, 0.1);
+}
+
+.ground-form__hint {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.ground-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+    .ground-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grounds-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .ground-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .grounds-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .grounds-filters .store-sort {
+        justify-content: space-between;
+    }
+
+    .grounds-filters .store-sort select,
+    .grounds-filters .store-sort input {
+        flex: 1;
+    }
+
+    .grounds-filters input {
+        width: 100%;
+    }
+
+    .ground-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ground-form__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .grounds-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .ground-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .ground-card__actions,
+    .ground-form__actions {
+        flex-direction: column;
+    }
+
+    .ground-card__actions .btn,
+    .ground-form__actions .btn {
+        width: 100%;
+    }
+
+    .ground-detail__manage {
+        flex-direction: column;
+    }
+}
+

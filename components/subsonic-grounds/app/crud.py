@@ -6,7 +6,6 @@ from . import models, schemas
 def listar_espacios(
     db: Session,
     tipo: Optional[str] = None,
-    evento_id: Optional[str] = None,
     ubicacion: Optional[str] = None,
     precio_max: Optional[float] = None
 ) -> List[models.EspacioModel]:
@@ -14,8 +13,6 @@ def listar_espacios(
 
     if tipo:
         query = query.filter(models.EspacioModel.tipo.ilike(f"%{tipo}%"))
-    if evento_id:
-        query = query.filter(models.EspacioModel.evento_id == evento_id)
     if ubicacion:
         query = query.filter(models.EspacioModel.ubicacion.ilike(f"%{ubicacion}%"))
     if precio_max is not None:
@@ -23,8 +20,8 @@ def listar_espacios(
 
     return query.all()
 
-def obtener_espacio(db: Session, space_id: str) -> models.EspacioModel:
-    espacio = db.query(models.EspacioModel).filter(models.EspacioModel.id == space_id).first()
+def obtener_espacio(db: Session, ground_id: str) -> models.EspacioModel:
+    espacio = db.query(models.EspacioModel).filter(models.EspacioModel.id == ground_id).first()
     if not espacio:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -47,8 +44,8 @@ def crear_espacio(db: Session, datos: schemas.EspacioInput) -> models.EspacioMod
     db.refresh(nuevo)
     return nuevo
 
-def actualizar_espacio(db: Session, space_id: str, datos: schemas.EspacioInput) -> models.EspacioModel:
-    espacio = obtener_espacio(db, space_id)
+def actualizar_espacio(db: Session, ground_id: str, datos: schemas.EspacioInput) -> models.EspacioModel:
+    espacio = obtener_espacio(db, ground_id)
     espacio.evento_id = datos.evento_id
     espacio.tipo = datos.tipo
     espacio.dimensiones = datos.dimensiones
@@ -61,13 +58,13 @@ def actualizar_espacio(db: Session, space_id: str, datos: schemas.EspacioInput) 
     db.refresh(espacio)
     return espacio
 
-def eliminar_espacio(db: Session, space_id: str) -> None:
-    espacio = obtener_espacio(db, space_id)
+def eliminar_espacio(db: Session, ground_id: str) -> None:
+    espacio = obtener_espacio(db, ground_id)
     db.delete(espacio)
     db.commit()
 
-def alquilar_espacio(db: Session, space_id: str, proveedor_id: str) -> models.EspacioModel:
-    espacio = obtener_espacio(db, space_id)
+def alquilar_espacio(db: Session, ground_id: str, proveedor_id: str) -> models.EspacioModel:
+    espacio = obtener_espacio(db, ground_id)
     if espacio.estado != models.EstadoEspacio.disponible:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -79,8 +76,3 @@ def alquilar_espacio(db: Session, space_id: str, proveedor_id: str) -> models.Es
     db.commit()
     db.refresh(espacio)
     return espacio
-
-def listar_espacios_por_proveedor(db: Session, proveedor_id: str) -> List[models.EspacioModel]:
-    return db.query(models.EspacioModel).filter(
-        models.EspacioModel.proveedor_id == proveedor_id
-    ).all()
