@@ -98,7 +98,7 @@ frontend/
 
 - JDK 17 o superior.
 - Maven 3.8 o superior.
-- El microservicio [`subsonic-users-auth`](../components/subsonic-users-auth/README.md)
+- El microservicio [`subsonic-users-auth`](../backend/components/subsonic-users-auth/README.md)
   en marcha para usar el acceso, el perfil y el panel de administración.
 - Opcionalmente, `service-festivals`, `subsonic-inventory-manager` y
   `service-artists-blog` para los módulos de eventos, inventario y artistas. Si no
@@ -110,7 +110,7 @@ frontend/
 Desde la raíz del repositorio:
 
 ```bash
-cd components/subsonic-users-auth
+cd backend/components/subsonic-users-auth
 docker compose up --build
 ```
 
@@ -168,7 +168,7 @@ mismo servicio usando `GATEWAY_ARTISTS_URL`.
 
 Al iniciar el backend Artists & Blog, se cargan automáticamente las fichas de
 demostración si la colección de artistas está vacía. Consulta el
-[`README del servicio`](../components/service-artists-blog/README.md) para más
+[`README del servicio`](../backend/components/service-artists-blog/README.md) para más
 detalles.
 
 ## Pruebas

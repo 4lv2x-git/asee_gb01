@@ -197,7 +197,7 @@ services:
   # beanie 2.x no es compatible con Motor 3.x y el servicio no arrancaba.
   auth:
     build:
-      context: ./components/subsonic-users-auth
+      context: ./backend/components/subsonic-users-auth
       dockerfile: Dockerfile
     image: subsonic/users-auth:local
     container_name: subsonic-auth
@@ -239,7 +239,7 @@ services:
   # Artistas y blog. Si la coleccion esta vacia, siembra artistas demo al arrancar.
   artists-blog:
     build:
-      context: ./components/service-artists-blog
+      context: ./backend/components/service-artists-blog
       dockerfile: Dockerfile
     image: subsonic/artists-blog:local
     container_name: subsonic-artists-blog
@@ -260,7 +260,7 @@ services:
   # Festivales, escaleta y pases. Publicado en 8001 para no chocar con auth.
   festivals:
     build:
-      context: ./components/service-festivals
+      context: ./backend/components/service-festivals
       dockerfile: Dockerfile
     image: subsonic/festivals:local
     container_name: subsonic-festivals
@@ -278,7 +278,7 @@ services:
   # Inventario y pedidos (Spring Boot). El Dockerfile ya fija SERVER_PORT=8081.
   inventory-manager:
     build:
-      context: ./components/subsonic-inventory-manager
+      context: ./backend/components/subsonic-inventory-manager
       dockerfile: Dockerfile
     image: subsonic/inventory-manager:local
     container_name: subsonic-inventory-manager
@@ -301,7 +301,7 @@ services:
   # de auth usa para referirse al gestor de espacios.
   grounds:
     build:
-      context: ./components/subsonic-grounds
+      context: ./backend/components/subsonic-grounds
       dockerfile: Dockerfile
     image: subsonic/grounds:local
     container_name: subsonic-grounds

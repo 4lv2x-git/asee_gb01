@@ -45,7 +45,7 @@ docker run --name postgres-inventory -e POSTGRES_USER=postgres -e POSTGRES_PASSW
 Desde la raíz del repositorio (`asee_gb01`), entra al directorio del componente:
 
 ```bash
-cd components/subsonic-inventory-manager
+cd backend/components/subsonic-inventory-manager
 ```
 
 ### 3. Compilar y Ejecutar la Aplicación
@@ -100,7 +100,7 @@ Desde esta interfaz podrás interactuar y validar todos los endpoints descritos 
 ## Estructura del Proyecto
 
 ```text
-components/inventory_manager/
+backend/components/subsonic-inventory-manager/
 ├── pom.xml                                      # Descriptor de dependencias y plugins de Maven
 ├── Dockerfile                                   # Construcción multi-etapa de la imagen Docker
 ├── docker-compose.yml                           # Orquestación de PostgreSQL y la aplicación
