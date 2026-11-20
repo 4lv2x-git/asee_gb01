@@ -80,10 +80,7 @@ frontend/
                 ├── site.js              # Acceso al perfil en la portada según la sesión
                 ├── cuenta.js            # Mostrar u ocultar contraseñas en las páginas de cuenta
                 ├── app.js               # Página principal y preview de recintos
-                ├── auth-pages.js        # Utilidades de login y registro
-                ├── commerce.js          # Utilidades compartidas (sesión, JWT, modales, avisos)
                 ├── festivales.js        # Catálogo de festivales
-                ├── neural-glow.js       # Efectos visuales
                 ├── commerce.js          # Utilidades de tienda, carrito y sesión
                 ├── tienda.js            # Catálogo, carrito y checkout
                 ├── recintos.js          # Gestor de espacios (grounds): listar, publicar, reservar
