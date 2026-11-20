@@ -21,7 +21,7 @@ async def verificar_rol(
     _internal: Annotated[None, Depends(require_internal)],
     rol_esperado: Annotated[Rol, Query(alias="rolEsperado")],
 ) -> RolVerificacionResponse:
-    if rol_esperado not in {Rol.CLIENTE, Rol.PROVEEDOR}:
-        raise ValidationError("rolEsperado debe ser cliente o proveedor")
+    if rol_esperado not in {Rol.CLIENTE, Rol.PROVEEDOR, Rol.GESTOR}:
+        raise ValidationError("rolEsperado debe ser cliente, proveedor o gestor")
     rol_valido = await InternalService().verificar_rol(user_id, rol_esperado)
     return RolVerificacionResponse(id=user_id, rol_valido=rol_valido)

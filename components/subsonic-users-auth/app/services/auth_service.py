@@ -33,8 +33,8 @@ class AuthService:
         self.verification_codes = verification_codes or VerificationCodeRepository()
 
     async def register(self, data: UsuarioRegistro) -> User:
-        if data.rol not in {Rol.CLIENTE, Rol.PROVEEDOR}:
-            raise ValidationError("Solo se permite registrar cliente o proveedor")
+        if data.rol not in {Rol.CLIENTE, Rol.PROVEEDOR, Rol.GESTOR}:
+            raise ValidationError("Solo se permite registrar cliente, proveedor o gestor")
         if data.rol == Rol.PROVEEDOR and not data.tipo_servicio:
             raise ValidationError("tipoServicio es obligatorio para proveedores")
         try:

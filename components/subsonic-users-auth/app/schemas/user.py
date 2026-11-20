@@ -26,8 +26,8 @@ class UsuarioRegistro(CamelModel):
 
     @model_validator(mode="after")
     def validate_role(self):
-        if self.rol not in {Rol.CLIENTE, Rol.PROVEEDOR}:
-            raise ValueError("Solo se permite registrar cliente o proveedor")
+        if self.rol not in {Rol.CLIENTE, Rol.PROVEEDOR, Rol.GESTOR}:
+            raise ValueError("Solo se permite registrar cliente, proveedor o gestor")
         if self.rol == Rol.PROVEEDOR and not self.tipo_servicio:
             raise ValueError("tipoServicio es obligatorio para proveedores")
         return self
