@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import FastAPI, Depends, Header, HTTPException, Path, Query, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import models, schemas, crud
 from .database import engine, get_db
@@ -14,6 +15,14 @@ app = FastAPI(
         "dentro de cada evento. Controla la disponibilidad, precios y vinculación de reservas."
     ),
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # DEPENDENCIA DE SEGURIDAD Y ROLES
@@ -41,6 +50,18 @@ def listar_y_buscar_espacios(
     db: Session = Depends(get_db)
 ):
     return crud.listar_espacios(db, tipo=tipo, ubicacion=ubicacion, precio_max=precio_max)
+
+@app.get(
+    "/api/grounds/{ground_id}",
+    response_model=schemas.Espacio,
+    tags=["Recintos y Espacios"],
+    summary="Consultar el detalle de un espacio",
+)
+def obtener_espacio(
+    ground_id: str = Path(..., description="Identificador unico del espacio."),
+    db: Session = Depends(get_db),
+):
+    return crud.obtener_espacio(db, ground_id)
 
 @app.post(
     "/api/grounds",

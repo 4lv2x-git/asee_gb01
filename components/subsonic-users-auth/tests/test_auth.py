@@ -34,6 +34,12 @@ async def test_register_cliente(client):
     assert "passwordHash" not in data
 
 
+async def test_register_gestor(client):
+    response = await register(client, rol="gestor")
+    assert response.status_code == 201
+    assert response.json()["rol"] == "gestor"
+
+
 async def test_register_proveedor_sin_tipo(client):
     response = await register(client, rol="proveedor")
     assert response.status_code == 422
