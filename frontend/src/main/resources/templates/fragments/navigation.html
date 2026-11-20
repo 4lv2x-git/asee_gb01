@@ -4,7 +4,7 @@
 <header class="site-header" th:fragment="siteHeader">
     <div class="container header__inner">
         <a class="logo" th:href="@{/}" aria-label="Subsonic Festival, inicio">
-            <span class="logo__mark" aria-hidden="true">S</span>
+            <img class="logo__image" th:src="@{/images/logoPrincipal.png}" alt="">
             <span class="logo__text">Subsonic<span>Festival 2027</span></span>
         </a>
         <nav class="site-nav" aria-label="Navegación principal">
@@ -17,20 +17,22 @@
             <a th:href="@{/cuenta}" data-auth-link>Acceso</a>
         </nav>
         <div class="header__actions">
-            <a class="cart-button" th:href="@{/#cart}"><span>Carrito</span></a>
+            <a class="cart-button" th:href="@{/#cart}"><span>Carrito</span><strong id="cartCount">0</strong></a>
             <a class="icon-button" th:href="@{/cuenta}" aria-label="Cuenta">
                 <img th:src="@{/images/User.png}" alt="">
             </a>
         </div>
     </div>
     <script th:src="@{/js/site.js}" defer></script>
+    <script th:src="@{/js/commerce.js}"></script>
+    <script th:inline="none">Subsonic.initHeader();</script>
 </header>
 
 <footer class="site-footer" th:fragment="siteFooter">
     <div class="container footer__inner">
         <div class="footer__brand">
             <a class="logo" th:href="@{/}" aria-label="Subsonic Festival, inicio">
-                <span class="logo__mark" aria-hidden="true">S</span>
+                <img class="logo__image" th:src="@{/images/logoPrincipal.png}" alt="">
                 <span class="logo__text">Subsonic<span>Festival 2027</span></span>
             </a>
             <p>Música sin filtros desde 2021. Tres días al año en los que Madrid suena distinto.</p>
