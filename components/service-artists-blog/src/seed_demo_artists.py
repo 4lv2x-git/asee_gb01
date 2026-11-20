@@ -7,108 +7,60 @@ DEMO_ARTISTS = (
         "id": "demo-adam-beyer",
         "nombre": "Adam Beyer",
         "imagen": "/images/Adam_Beyer.webp",
-        "biografia": (
-            "Ficha de demostración. Esta biografía no está incluida en el "
-            "proyecto anterior y debe sustituirse por información verificada."
-        ),
+        "biografia": "La biografía no está incluida en el proyecto del año pasado.",
         "redesSociales": {},
         "eventosVinculados": [],
-        "cancionesDestacadas": [
-            {
-                "titulo": "[DEMO] Canción ficticia, no es un lanzamiento real",
-                "album": "[DEMO] Álbum ficticio",
-            }
-        ],
+        "cancionesDestacadas": [],
     },
     {
         "_id": "demo-amelie-lens",
         "id": "demo-amelie-lens",
         "nombre": "Amelie Lens",
         "imagen": "/images/Amelie_Lens.jpg",
-        "biografia": (
-            "Ficha de demostración. Esta biografía no está incluida en el "
-            "proyecto anterior y debe sustituirse por información verificada."
-        ),
+        "biografia": "La biografía no está incluida en el proyecto del año pasado.",
         "redesSociales": {},
         "eventosVinculados": [],
-        "cancionesDestacadas": [
-            {
-                "titulo": "[DEMO] Canción ficticia, no es un lanzamiento real",
-                "album": "[DEMO] Álbum ficticio",
-            }
-        ],
+        "cancionesDestacadas": [],
     },
     {
         "_id": "demo-boris-brejcha",
         "id": "demo-boris-brejcha",
         "nombre": "Boris Brejcha",
         "imagen": "/images/Boris_Brejcha.jpg",
-        "biografia": (
-            "Ficha de demostración. Esta biografía no está incluida en el "
-            "proyecto anterior y debe sustituirse por información verificada."
-        ),
+        "biografia": "La biografía no está incluida en el proyecto del año pasado.",
         "redesSociales": {},
         "eventosVinculados": [],
-        "cancionesDestacadas": [
-            {
-                "titulo": "[DEMO] Canción ficticia, no es un lanzamiento real",
-                "album": "[DEMO] Álbum ficticio",
-            }
-        ],
+        "cancionesDestacadas": [],
     },
     {
         "_id": "demo-carl-cox",
         "id": "demo-carl-cox",
         "nombre": "Carl Cox",
         "imagen": "/images/Carl_Cox.jpg",
-        "biografia": (
-            "Ficha de demostración. Esta biografía no está incluida en el "
-            "proyecto anterior y debe sustituirse por información verificada."
-        ),
+        "biografia": "La biografía no está incluida en el proyecto del año pasado.",
         "redesSociales": {},
         "eventosVinculados": [],
-        "cancionesDestacadas": [
-            {
-                "titulo": "[DEMO] Canción ficticia, no es un lanzamiento real",
-                "album": "[DEMO] Álbum ficticio",
-            }
-        ],
+        "cancionesDestacadas": [],
     },
     {
         "_id": "demo-charlotte-de-witte",
         "id": "demo-charlotte-de-witte",
         "nombre": "Charlotte de Witte",
         "imagen": "/images/Charlotte_de_Witte.png",
-        "biografia": (
-            "Ficha de demostración. Esta biografía no está incluida en el "
-            "proyecto anterior y debe sustituirse por información verificada."
-        ),
+        "biografia": "La biografía no está incluida en el proyecto del año pasado.",
         "redesSociales": {},
         "eventosVinculados": [],
-        "cancionesDestacadas": [
-            {
-                "titulo": "[DEMO] Canción ficticia, no es un lanzamiento real",
-                "album": "[DEMO] Álbum ficticio",
-            }
-        ],
+        "cancionesDestacadas": [],
     },
     {
         "_id": "demo-nina-kraviz",
         "id": "demo-nina-kraviz",
         "nombre": "Nina Kraviz",
         "imagen": "/images/Nina_Kraviz.jpg",
-        "biografia": (
-            "Ficha de demostración. Esta biografía no está incluida en el "
-            "proyecto anterior y debe sustituirse por información verificada."
-        ),
+        "biografia": "La biografía no está incluida en el proyecto del año pasado.",
         "redesSociales": {},
         "eventosVinculados": [],
-        "cancionesDestacadas": [
-            {
-                "titulo": "[DEMO] Canción ficticia, no es un lanzamiento real",
-                "album": "[DEMO] Álbum ficticio",
-            }
-        ],
+        "cancionesDestacadas": [],
     },
 )
 

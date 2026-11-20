@@ -49,9 +49,9 @@ vacía, carga seis registros identificados como demostración. La conexión usa
 del equipo, usa la URI y la base de datos asignadas; no sustituyas esos valores
 por `localhost`. Si ya hay artistas, no añade ni modifica ningún registro.
 
-Las biografías son avisos pendientes de sustituir y las canciones son
-ficticias, etiquetadas como `[DEMO]`. No se inventan enlaces sociales ni eventos.
-Las imágenes se sirven desde el frontend.
+La biografía indica cuándo no hay datos y las canciones, redes sociales y eventos
+se dejan vacíos si no están en el proyecto anterior. Las imágenes se sirven desde
+el frontend.
 
 ## Pruebas
 

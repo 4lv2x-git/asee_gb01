@@ -33,6 +33,19 @@ class FakeClient:
 
 
 class DemoArtistSeedTests(unittest.TestCase):
+    def test_seed_contains_only_the_six_previous_year_artists(self):
+        self.assertEqual(
+            {artist["nombre"] for artist in DEMO_ARTISTS},
+            {
+                "Adam Beyer",
+                "Amelie Lens",
+                "Boris Brejcha",
+                "Carl Cox",
+                "Charlotte de Witte",
+                "Nina Kraviz",
+            },
+        )
+
     def test_seed_upserts_only_demo_records(self):
         collection = FakeCollection()
 
@@ -78,18 +91,12 @@ class DemoArtistSeedTests(unittest.TestCase):
         self.assertEqual(len(collection.replacements), 6)
         self.assertTrue(client.closed)
 
-    def test_demo_bios_and_songs_are_clearly_marked(self):
+    def test_missing_artist_details_are_not_fabricated(self):
         for artist in DEMO_ARTISTS:
-            self.assertIn("demostración", artist["biografia"].lower())
+            self.assertIn("no está incluida", artist["biografia"].lower())
             self.assertEqual(artist["eventosVinculados"], [])
             self.assertEqual(artist["redesSociales"], {})
-            self.assertTrue(
-                all(
-                    song["titulo"].startswith("[DEMO]")
-                    and song["album"].startswith("[DEMO]")
-                    for song in artist["cancionesDestacadas"]
-                )
-            )
+            self.assertEqual(artist["cancionesDestacadas"], [])
 
     def test_seed_records_match_the_public_artist_contract(self):
         for artist_data in DEMO_ARTISTS:
@@ -97,7 +104,7 @@ class DemoArtistSeedTests(unittest.TestCase):
 
             self.assertEqual(artist.id, artist_data["id"])
             self.assertEqual(artist.nombre, artist_data["nombre"])
-            self.assertTrue(artist.canciones_destacadas)
+            self.assertEqual(artist.canciones_destacadas, [])
 
 
 if __name__ == "__main__":
