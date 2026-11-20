@@ -10,12 +10,19 @@ frontend/
 ├── README.md
 └── src/main/
     ├── java/com/subsonicfestival/frontend/
-    │   └── FrontendApplication.java     # Punto de entrada de Spring Boot
+    │   ├── FrontendApplication.java     # Punto de entrada de Spring Boot
+    │   └── GatewayController.java       # Proxy hacia los microservicios
     └── resources/
         ├── application.properties
         └── static/
             ├── index.html               # Página principal
-            └── css/styles.css           # Estilos y diseño responsive
+            ├── tienda.html              # Tienda conectada al inventario
+            ├── pedidos.html             # Historial y detalle de pedidos
+            ├── css/styles.css           # Estilos y diseño responsive
+            └── js/
+                ├── commerce.js          # Utilidades de tienda, carrito y sesión
+                ├── tienda.js            # Catálogo, carrito y checkout
+                └── pedidos.js           # Pedidos, entradas y cancelaciones
 ```
 
 ## Ver la página sin backend
