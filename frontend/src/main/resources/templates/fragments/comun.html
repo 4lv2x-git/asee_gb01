@@ -14,36 +14,53 @@
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" th:href="@{/css/account.css}">
     <script th:src="@{/js/cuenta.js}" defer></script>
+    <script th:src="@{/js/site.js}" defer></script>
+    <script th:src="@{/js/commerce.js}" defer></script>
+    <script th:inline="none">document.addEventListener("DOMContentLoaded", function () { Subsonic.initHeader(); });</script>
 </head>
 <body>
 
 <header th:fragment="cabeceraPublica" class="site-header">
     <div class="container header__inner">
         <a class="logo" th:href="@{/index.html}" aria-label="Subsonic Festival, volver al inicio">
-            <span class="logo__mark" aria-hidden="true">S</span>
+            <img class="logo__image" th:src="@{/images/logoPrincipal.png}" alt="">
             <span class="logo__text">Subsonic<span>Festival 2027</span></span>
         </a>
 
         <nav class="site-nav" aria-label="Navegación principal">
-            <a th:href="@{/index.html#cartel}">Cartel</a>
-            <a th:href="@{/index.html#experiencia}">Experiencia</a>
-            <a th:href="@{/index.html#entradas}">Entradas</a>
-            <a th:href="@{/index.html#ubicacion}">Ubicación</a>
+            <a th:href="@{/festivales.html}">Festivales</a>
+            <a th:href="@{/tienda.html}">Tienda</a>
+            <a th:href="@{/artistas}">Artistas</a>
+            <a th:href="@{/blog}">Blog</a>
+            <a th:href="@{/recintos.html}">Recintos</a>
+            <a th:href="@{/pedidos.html}">Mis pedidos</a>
+            <a th:href="@{/cuenta}" data-auth-link>Acceso</a>
         </nav>
 
-        <a class="btn btn--ghost btn--small" th:href="@{/index.html}">Volver al inicio</a>
+        <div class="header__actions">
+            <a class="cart-button" th:href="@{/#cart}"><span>Carrito</span><strong id="cartCount">0</strong></a>
+            <a class="icon-button" th:href="@{/cuenta}" aria-label="Cuenta">
+                <img th:src="@{/images/User.png}" alt="">
+            </a>
+        </div>
     </div>
 </header>
 
 <header th:fragment="cabeceraCuenta(activa)" class="site-header">
     <div class="container header__inner account-header__inner">
         <a class="logo" th:href="@{/index.html}" aria-label="Subsonic Festival, volver al inicio">
-            <span class="logo__mark" aria-hidden="true">S</span>
+            <img class="logo__image" th:src="@{/images/logoPrincipal.png}" alt="">
             <span class="logo__text">Subsonic<span>Festival 2027</span></span>
         </a>
 
         <nav class="site-nav" aria-label="Navegación principal">
-            <a th:href="@{/index.html}">Inicio</a>
+            <a th:href="@{/festivales.html}">Festivales</a>
+            <a th:href="@{/tienda.html}">Tienda</a>
+            <a th:href="@{/artistas}">Artistas</a>
+            <a th:href="@{/blog}">Blog</a>
+            <a th:href="@{/recintos.html}">Recintos</a>
+            <a th:href="@{/pedidos.html}">Mis pedidos</a>
+            <a th:href="@{/cuenta}" data-auth-link>Acceso</a>
             <a th:href="@{/perfil}"
                th:attr="aria-current=${activa == 'perfil' ? 'page' : null}"
                th:classappend="${activa == 'perfil' ? 'is-active' : ''}">Mi perfil</a>
@@ -54,6 +71,10 @@
         </nav>
 
         <div class="account-header__actions">
+            <a class="cart-button" th:href="@{/#cart}"><span>Carrito</span><strong id="cartCount">0</strong></a>
+            <a class="icon-button" th:href="@{/cuenta}" aria-label="Cuenta">
+                <img th:src="@{/images/User.png}" alt="">
+            </a>
             <a class="user-chip" th:href="@{/perfil}"
                th:title="${usuarioActual != null ? 'Ir al perfil de ' + usuarioActual.nombre : 'Mi perfil'}"
                th:attr="aria-label=${usuarioActual != null ? 'Ir al perfil de ' + usuarioActual.nombre : 'Mi perfil'}">

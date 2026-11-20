@@ -4,12 +4,12 @@ Esta es la guía de puesta en marcha de todo el backend. El backend funciona aho
 
 ## Importante: dónde está realmente el código
 
-Esta carpeta `backend/` contiene en la actualidad solo artefactos locales sobrantes (copias de build/caché de `subsonic-users-auth` y un `src/server.js` vacío). **Docker no construye ni monta nada de esta carpeta.**
+Esta carpeta `backend/` contiene los microservicios en `components/` y algunos artefactos locales sobrantes (un `src/server.js` vacío). **Docker construye los microservicios desde `backend/components/`, no desde los antiguos compose de cada componente.**
 
 Las fuentes reales y la definición del stack están en la raíz del repositorio:
 
 - [`../docker-compose.yml`](../docker-compose.yml) — el stack único del backend (este es el archivo que hay que ejecutar).
-- [`../components/`](../components/) — el código fuente y los Dockerfiles de cada microservicio.
+- [`components/`](components/) — el código fuente y los Dockerfiles de cada microservicio.
 
 Los archivos compose antiguos de cada componente (`components/subsonic-users-auth/docker-compose.yml`, `components/subsonic-inventory-manager/docker-compose.yml` y `components/service-artists-blog/compose.yaml`) siguen ahí como referencia/prueba, pero **no los arranques a la vez que el stack de la raíz**: publican puertos que se solapan.
 
@@ -17,11 +17,11 @@ Los archivos compose antiguos de cada componente (`components/subsonic-users-aut
 
 | Componente | Stack | Qué hace | Base de datos | Puerto en el host |
 | --- | --- | --- | --- | --- |
-| [`subsonic-users-auth`](../components/subsonic-users-auth/) | Python / FastAPI | Acceso, JWT, perfiles, administración y comprobaciones internas de roles. Crea un administrador inicial al arrancar. | MongoDB 7 (`subsonic_users`, replica set `rs0`) | `8000` |
-| [`service-artists-blog`](../components/service-artists-blog/) | Python / FastAPI | Fichas de artistas y artículos del blog. Carga seis artistas de demostración si la colección está vacía. Los endpoints de administración y uso interno validan el JWT firmado con el `JWT_SECRET` compartido. | MongoDB 8 (`subsonic_festival`) | `8002` |
-| [`service-festivals`](../components/service-festivals/) | Python / FastAPI | Festivales, escaleta y pases (`/eventos`, `/eventos/{id}/escaleta`, `/eventos/{id}/pases`). | PostgreSQL 15 (`festivals_db`) | `8001` |
-| [`subsonic-inventory-manager`](../components/subsonic-inventory-manager/) | Java / Spring Boot | Catálogo de productos, stock, pedidos y endpoints internos de verificación. Inicializa el catálogo al arrancar. | PostgreSQL 15 (`inventory_db`) | `8081` |
-| [`subsonic-grounds`](../components/subsonic-grounds/) | Python / FastAPI | Gestión de espacios y recintos (`/api/grounds`), precios y alquileres. | SQLite en su propio volumen | `8004` |
+| [`subsonic-users-auth`](components/subsonic-users-auth/) | Python / FastAPI | Acceso, JWT, perfiles, administración y comprobaciones internas de roles. Crea un administrador inicial al arrancar. | MongoDB 7 (`subsonic_users`, replica set `rs0`) | `8000` |
+| [`service-artists-blog`](components/service-artists-blog/) | Python / FastAPI | Fichas de artistas y artículos del blog. Carga seis artistas de demostración si la colección está vacía. Los endpoints de administración y uso interno validan el JWT firmado con el `JWT_SECRET` compartido. | MongoDB 8 (`subsonic_festival`) | `8002` |
+| [`service-festivals`](components/service-festivals/) | Python / FastAPI | Festivales, escaleta y pases (`/eventos`, `/eventos/{id}/escaleta`, `/eventos/{id}/pases`). | PostgreSQL 15 (`festivals_db`) | `8001` |
+| [`subsonic-inventory-manager`](components/subsonic-inventory-manager/) | Java / Spring Boot | Catálogo de productos, stock, pedidos y endpoints internos de verificación. Inicializa el catálogo al arrancar. | PostgreSQL 15 (`inventory_db`) | `8081` |
+| [`subsonic-grounds`](components/subsonic-grounds/) | Python / FastAPI | Gestión de espacios y recintos (`/api/grounds`), precios y alquileres. | SQLite en su propio volumen | `8004` |
 
 Cada base de datos tiene su **propio contenedor y su propio volumen con nombre**, de modo que los servicios siguen aislados aunque dos de ellos usen MongoDB o PostgreSQL:
 
@@ -113,8 +113,8 @@ Cambia `ADMIN_PASSWORD`, `JWT_SECRET` e `INTERNAL_API_KEY` en `docker-compose.ym
 - Toda la configuración del backend está **en línea en `../docker-compose.yml`**. No hay entradas `env_file:`; los antiguos archivos `.env.example`/`.env` no los usa este stack.
 - Las credenciales de PostgreSQL son `postgres` / `postgres` en ambas bases de datos, pero cada una vive en su propio contenedor y volumen.
 - `JWT_SECRET` es compartido por `auth` y `artists-blog` para que los tokens emitidos por auth sean aceptados por el servicio de artistas.
-- `subsonic-users-auth` fija `beanie>=1.26,<2` en [`../components/subsonic-users-auth/pyproject.toml`](../components/subsonic-users-auth/pyproject.toml). Beanie 2.x no es compatible con Motor 3.x y evitaba que el servicio arrancara.
-- `subsonic-grounds` incorporó un Dockerfile en [`../components/subsonic-grounds/Dockerfile`](../components/subsonic-grounds/Dockerfile) para que el stack de la raíz pueda construirlo.
+- `subsonic-users-auth` fija `beanie>=1.26,<2` en [`components/subsonic-users-auth/pyproject.toml`](components/subsonic-users-auth/pyproject.toml). Beanie 2.x no es compatible con Motor 3.x y evitaba que el servicio arrancara.
+- `subsonic-grounds` incorporó un Dockerfile en [`components/subsonic-grounds/Dockerfile`](components/subsonic-grounds/Dockerfile) para que el stack de la raíz pueda construirlo.
 - La opción `SPACES_SERVICE_URL` de `auth` se resuelve mediante el alias de red `subsonic-spaces` en `grounds`. La ruta heredada `/v1/interno/proveedores/{id}/espacios` no está implementada en `grounds`, así que `GET /v1/usuarios/historial-espacios` devolverá `502` hasta que esa ruta exista. No afecta al acceso ni a los flujos normales de autenticación.
 - Todos los puertos publicados están ligados a `127.0.0.1`, por lo que el stack no queda expuesto a tu red local.
 

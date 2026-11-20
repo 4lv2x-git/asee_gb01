@@ -8,7 +8,7 @@ from src.main import app
 
 
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 OPENAPI_FILES = (
     PROJECT_ROOT / "docs" / "openapi" / "artistas.yml",
     PROJECT_ROOT / "docs" / "openapi" / "blog.yml",

@@ -49,7 +49,7 @@ Desde la raíz del repositorio (`asee_gb01`), activa el entorno virtual de Pytho
 
 ### 3. Navegar a la Carpeta del Microservicio
 ```bash
-cd components/service-festivals
+cd backend/components/service-festivals
 ```
 
 ### 4. Instalar Dependencias
@@ -85,7 +85,7 @@ Desde esta interfaz podrás realizar pruebas de las operaciones CRUD disponibles
 ## Estructura del Proyecto
 
 ```text
-components/service-festivals/
+backend/components/service-festivals/
 ├── src/
 │   ├── __init__.py
 │   ├── database.py       # Configuración de la conexión a PostgreSQL con SQLAlchemy

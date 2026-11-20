@@ -64,8 +64,8 @@ Desde esta carpeta, instala las dependencias y ejecuta:
 La prueba `test_openapi_contract.py` compara las operaciones implementadas con
 los contratos del repositorio:
 
-- `../../docs/openapi/artistas.yml`
-- `../../docs/openapi/blog.yml`
+- `../../../docs/openapi/artistas.yml`
+- `../../../docs/openapi/blog.yml`
 
 ## Endpoints del contrato
 
