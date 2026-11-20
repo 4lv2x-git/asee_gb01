@@ -26,7 +26,11 @@
         <div class="artist-profile__intro">
             <p class="eyebrow"><span class="eyebrow__dot"></span> Artista del festival</p>
             <h1 th:text="${artist.nombre}">Nombre del artista</h1>
-            <p class="artist-profile__biography" th:text="${artist.biografia}">Biografía del artista</p>
+            <p class="artist-profile__biography" th:if="${!#strings.isEmpty(artist.biografia)}"
+               th:text="${artist.biografia}">Biografía del artista</p>
+            <p class="muted-copy" th:unless="${!#strings.isEmpty(artist.biografia)}">
+                Biografía no disponible.
+            </p>
             <div class="social-links" th:if="${artist.redesSociales.instagram != null or artist.redesSociales.twitter != null or artist.redesSociales.web != null}">
                 <a th:if="${artist.redesSociales.instagram != null}" th:href="${artist.redesSociales.instagram}"
                    target="_blank" rel="noopener noreferrer">Instagram</a>
