@@ -71,9 +71,10 @@ mvn spring-boot:run
 La portada consulta `/api/gateway/artists`; las vistas Thymeleaf consultan el
 mismo servicio usando `GATEWAY_ARTISTS_URL`.
 
-Para cargar las fichas de artistas de demostración, inicia el microservicio
-Artists & Blog y sigue el comando de carga descrito en
-[`components/service-artists-blog/README.md`](../components/service-artists-blog/README.md).
+Al iniciar el backend Artists & Blog, se cargan automáticamente las fichas de
+demostración si la colección de artistas está vacía. Consulta el
+[`README del servicio`](../components/service-artists-blog/README.md) para más
+detalles.
 
 ## Pruebas
 

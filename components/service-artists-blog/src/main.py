@@ -29,6 +29,7 @@ from src.schemas import (
     ArtistSummary,
     Song,
 )
+from src.seed_demo_artists import seed_demo_artists_if_empty
 from src.services import ArtistService, BlogService
 
 logger = logging.getLogger("artists_blog")
@@ -41,6 +42,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     client = connect(settings)
     app.state.mongo_client = client
     try:
+        seeded_count = seed_demo_artists_if_empty(
+            get_database(client, settings)["artistas"]
+        )
+        if seeded_count:
+            logger.info(
+                "Seeded %d demo artists into the empty collection.",
+                seeded_count,
+            )
         yield
     finally:
         client.close()

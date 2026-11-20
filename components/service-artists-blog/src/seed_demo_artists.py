@@ -1,8 +1,5 @@
 from pymongo.collection import Collection
 
-from src.config import Settings
-from src.database import connect, get_database
-
 
 DEMO_ARTISTS = (
     {
@@ -126,17 +123,7 @@ def seed_demo_artists(collection: Collection) -> int:
     return len(DEMO_ARTISTS)
 
 
-def main() -> None:
-    settings = Settings.from_environment()
-    client = connect(settings)
-    try:
-        collection = get_database(client, settings)["artistas"]
-        count = seed_demo_artists(collection)
-    finally:
-        client.close()
-
-    print(f"Se han cargado {count} fichas de demostración de artistas.")
-
-
-if __name__ == "__main__":
-    main()
+def seed_demo_artists_if_empty(collection: Collection) -> int:
+    if collection.count_documents({}) > 0:
+        return 0
+    return seed_demo_artists(collection)

@@ -40,20 +40,18 @@ datos:
 docker compose down
 ```
 
-## Fichas de demostración
+## Inicialización de artistas de demostración
 
 El proyecto anterior incluye imágenes de seis artistas, pero no exporta sus
-fichas de Firebase. Para poder revisar el catálogo y las fichas mientras llegan
-los datos reales, puedes cargar registros identificados como demostración:
+fichas de Firebase. Al arrancar el backend, si la colección `artistas` está
+vacía, carga seis registros identificados como demostración. La conexión usa
+`MONGODB_URL` y `MONGODB_DATABASE` configurados para el backend. En el entorno
+del equipo, usa la URI y la base de datos asignadas; no sustituyas esos valores
+por `localhost`. Si ya hay artistas, no añade ni modifica ningún registro.
 
-```text
-docker compose exec api python -m src.seed_demo_artists
-```
-
-El comando inserta o actualiza únicamente IDs `demo-*`; se puede ejecutar más
-de una vez. Las biografías son avisos pendientes de sustituir y las canciones
-son ficticias, se muestran etiquetadas como `[DEMO]`. No contiene enlaces
-sociales ni eventos inventados. Las imágenes se sirven desde el frontend.
+Las biografías son avisos pendientes de sustituir y las canciones son
+ficticias, etiquetadas como `[DEMO]`. No se inventan enlaces sociales ni eventos.
+Las imágenes se sirven desde el frontend.
 
 ## Pruebas
 
