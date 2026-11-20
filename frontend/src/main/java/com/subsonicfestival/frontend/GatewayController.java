@@ -9,9 +9,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,17 +33,20 @@ public class GatewayController {
     private final String artistsUrl;
     private final String authUrl;
     private final String inventoryUrl;
+    private final String groundsUrl;
 
     public GatewayController(RestTemplate restTemplate,
                              @Value("${gateway.events-url}") String eventsUrl,
                              @Value("${gateway.artists-url}") String artistsUrl,
                              @Value("${gateway.auth-url}") String authUrl,
-                             @Value("${gateway.inventory-url}") String inventoryUrl) {
+                             @Value("${gateway.inventory-url}") String inventoryUrl,
+                             @Value("${gateway.grounds-url}") String groundsUrl) {
         this.restTemplate = restTemplate;
         this.eventsUrl = eventsUrl;
         this.artistsUrl = artistsUrl;
         this.authUrl = authUrl;
         this.inventoryUrl = inventoryUrl;
+        this.groundsUrl = groundsUrl;
     }
 
     @GetMapping("/events")
@@ -98,6 +103,47 @@ public class GatewayController {
         return proxy(inventoryUrl + "/inventario/productos/" + id, HttpMethod.GET, null, null);
     }
 
+    @GetMapping("/grounds")
+    public ResponseEntity<?> grounds(@RequestParam Map<String, String> parameters) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(groundsUrl + "/api/grounds");
+        parameters.forEach(builder::queryParam);
+        return proxy(builder.build().encode().toUriString(), HttpMethod.GET, null, null);
+    }
+
+    @PostMapping("/grounds")
+    public ResponseEntity<?> createGround(@RequestBody Object body,
+                                          @RequestHeader(value = "Authorization", required = false) String authorization,
+                                          @RequestHeader(value = "X-User-Id", required = false) String userId,
+                                          @RequestHeader(value = "X-User-Role", required = false) String role) {
+        return proxy(groundsUrl + "/api/grounds", HttpMethod.POST, body, authorization, userId, role);
+    }
+
+    @PutMapping("/grounds/{id}")
+    public ResponseEntity<?> updateGround(@PathVariable("id") String id,
+                                          @RequestBody Object body,
+                                          @RequestHeader(value = "Authorization", required = false) String authorization,
+                                          @RequestHeader(value = "X-User-Id", required = false) String userId,
+                                          @RequestHeader(value = "X-User-Role", required = false) String role) {
+        return proxy(groundsUrl + "/api/grounds/" + id, HttpMethod.PUT, body, authorization, userId, role);
+    }
+
+    @DeleteMapping("/grounds/{id}")
+    public ResponseEntity<?> deleteGround(@PathVariable("id") String id,
+                                          @RequestHeader(value = "Authorization", required = false) String authorization,
+                                          @RequestHeader(value = "X-User-Id", required = false) String userId,
+                                          @RequestHeader(value = "X-User-Role", required = false) String role) {
+        return proxy(groundsUrl + "/api/grounds/" + id, HttpMethod.DELETE, null, authorization, userId, role);
+    }
+
+    @PostMapping("/grounds/{id}/rent")
+    public ResponseEntity<?> rentGround(@PathVariable("id") String id,
+                                        @RequestBody Object body,
+                                        @RequestHeader(value = "Authorization", required = false) String authorization,
+                                        @RequestHeader(value = "X-User-Id", required = false) String userId,
+                                        @RequestHeader(value = "X-User-Role", required = false) String role) {
+        return proxy(groundsUrl + "/api/grounds/" + id + "/alquilar", HttpMethod.POST, body, authorization, userId, role);
+    }
+
     @GetMapping("/orders")
     public ResponseEntity<?> orders(@RequestHeader(value = "Authorization", required = false) String authorization,
                                     @RequestHeader(value = "X-User-Id", required = false) String userId) {
@@ -144,6 +190,10 @@ public class GatewayController {
     }
 
     private ResponseEntity<?> proxy(String url, HttpMethod method, Object body, String authorization, String userId) {
+        return proxy(url, method, body, authorization, userId, null);
+    }
+
+    private ResponseEntity<?> proxy(String url, HttpMethod method, Object body, String authorization, String userId, String role) {
         try {
             HttpHeaders headers = new HttpHeaders();
             if (authorization != null) {
@@ -151,6 +201,9 @@ public class GatewayController {
             }
             if (userId != null && !userId.isBlank()) {
                 headers.set("X-User-Id", userId.trim());
+            }
+            if (role != null && !role.isBlank()) {
+                headers.set("X-User-Role", role.trim());
             }
             HttpEntity<?> entity = body == null ? new HttpEntity<>(headers) : new HttpEntity<>(body, headers);
             return restTemplate.exchange(url, method, entity, Object.class);

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="site-header" th:fragment="siteHeader">
+    <div class="container header__inner">
+        <a class="logo" th:href="@{/}" aria-label="Subsonic Festival, inicio">
+            <span class="logo__mark" aria-hidden="true">S</span>
+            <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+        </a>
+        <nav class="site-nav" aria-label="Navegación principal">
+            <a th:href="@{/}">Inicio</a>
+            <a th:href="@{/#cartel}">Cartel</a>
+            <a th:href="@{/artistas}">Artistas</a>
+            <a th:href="@{/blog}">Blog</a>
+        </nav>
+        <a class="btn btn--primary btn--small" th:href="@{/#entradas}">Entradas</a>
+    </div>
+</header>
+
+<footer class="site-footer" th:fragment="siteFooter">
+    <div class="container footer__inner">
+        <div class="footer__brand">
+            <a class="logo" th:href="@{/}" aria-label="Subsonic Festival, inicio">
+                <span class="logo__mark" aria-hidden="true">S</span>
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+            <p>Música sin filtros desde 2021. Tres días al año en los que Madrid suena distinto.</p>
+        </div>
+        <nav class="footer__col" aria-label="Festival">
+            <h2>Descubre</h2>
+            <a th:href="@{/#cartel}">Cartel</a>
+            <a th:href="@{/artistas}">Artistas</a>
+            <a th:href="@{/blog}">Blog</a>
+            <a th:href="@{/#ubicacion}">Ubicación</a>
+        </nav>
+        <div class="footer__col">
+            <h2>Contacto</h2>
+            <a href="mailto:hola@subsonicfestival.com">hola@subsonicfestival.com</a>
+            <p>Prensa y colaboraciones: prensa@subsonicfestival.com</p>
+        </div>
+    </div>
+    <div class="container footer__bottom">
+        <p>© 2027 Subsonic Festival. Todos los derechos reservados.</p>
+        <p>Hecho con ruido en Madrid.</p>
+    </div>
+</footer>
+</body>
+</html>

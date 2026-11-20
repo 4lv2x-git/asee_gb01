@@ -60,21 +60,33 @@ frontend/
         │   ├── admin-inventario.html
         │   ├── admin-editar.html
         │   ├── admin-password.html
+        │   ├── fragments/navigation.html
+        │   ├── artists-blog/              # Catálogo y detalle de artistas/blog
         │   ├── confirmar-eliminar.html
         │   └── fragments/
         │       └── comun.html           # Cabeceras, pie y alertas compartidas
         └── static/
-            ├── index.html               # Página principal
+            ├── index.html               # Página principal (con preview de recintos)
+            ├── artistas.html            # Alias legado; la vista completa usa Thymeleaf
+            ├── blog.html                # Alias legado; la vista completa usa Thymeleaf
+            ├── festivales.html          # Catálogo de festivales y pases
             ├── tienda.html              # Tienda conectada al inventario
             ├── pedidos.html             # Historial y detalle de pedidos
+            ├── recintos.html            # Gestor de espacios / recintos (grounds)
             ├── css/
             │   ├── styles.css           # Estilos de la página principal
             │   └── account.css          # Acceso, perfil y administración
             └── js/
                 ├── site.js              # Acceso al perfil en la portada según la sesión
                 ├── cuenta.js            # Mostrar u ocultar contraseñas en las páginas de cuenta
+                ├── app.js               # Página principal y preview de recintos
+                ├── auth-pages.js        # Utilidades de login y registro
+                ├── commerce.js          # Utilidades compartidas (sesión, JWT, modales, avisos)
+                ├── festivales.js        # Catálogo de festivales
+                ├── neural-glow.js       # Efectos visuales
                 ├── commerce.js          # Utilidades de tienda, carrito y sesión
                 ├── tienda.js            # Catálogo, carrito y checkout
+                ├── recintos.js          # Gestor de espacios (grounds): listar, publicar, reservar
                 └── pedidos.js           # Pedidos, entradas y cancelaciones
 ```
 
@@ -118,7 +130,36 @@ cd frontend
 mvn spring-boot:run
 ```
 
-Abre [http://localhost:8080](http://localhost:8080).
+Abre [http://localhost:8080](http://localhost:8080). Las páginas del componente
+están disponibles en `/artistas` y `/blog`. Si el microservicio Artists & Blog
+no está disponible, el frontend muestra una página de error en vez de presentar
+una lista vacía como si fuera válida.
+
+Configura las URL internas de los microservicios mediante `GATEWAY_EVENTS_URL`,
+`GATEWAY_ARTISTS_URL`, `GATEWAY_AUTH_URL` y `GATEWAY_INVENTORY_URL`. Artists &
+Blog publica el puerto 8002 en el host cuando se inicia con Docker Compose.
+
+```powershell
+$env:GATEWAY_ARTISTS_URL = "http://localhost:8002"
+mvn spring-boot:run
+```
+
+La portada consulta `/api/gateway/artists`; las vistas Thymeleaf consultan el
+mismo servicio usando `GATEWAY_ARTISTS_URL`.
+
+Al iniciar el backend Artists & Blog, se cargan automáticamente las fichas de
+demostración si la colección de artistas está vacía. Consulta el
+[`README del servicio`](../components/service-artists-blog/README.md) para más
+detalles.
+
+## Pruebas
+
+```bash
+mvn test
+```
+
+Las pruebas MVC verifican el renderizado de catálogos, detalles, enlaces,
+paginación y límites de consulta.
 
 Para empaquetar como JAR:
 
