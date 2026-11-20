@@ -70,7 +70,7 @@
     </div>
 </header>
 
-<aside th:fragment="adminModulos(activo, usuariosTotal, eventosTotal, productosTotal)"
+<aside th:fragment="adminModulos(activo, usuariosTotal, eventosTotal, productosTotal, artistasTotal)"
        class="panel admin-sidebar" aria-label="Módulos del panel">
     <p class="admin-sidebar__title">Módulos</p>
     <nav aria-label="Secciones del panel">
@@ -95,13 +95,17 @@
             Inventario
             <span class="badge" th:if="${productosTotal != null}" th:text="${productosTotal}">0</span>
         </a>
-        <span class="sidebar-link is-disabled" aria-disabled="true">
-            Artistas <small>Próximamente</small>
-        </span>
+        <a class="sidebar-link"
+           th:classappend="${activo == 'artistas' ? 'is-active' : ''}"
+           th:href="@{/admin/artistas}"
+           th:attr="aria-current=${activo == 'artistas' ? 'page' : null}">
+            Artistas
+            <span class="badge" th:if="${artistasTotal != null}" th:text="${artistasTotal}">0</span>
+        </a>
     </nav>
     <p class="sidebar-note">
-        Gestiona las cuentas, consulta los festivales y supervisa el catálogo y el stock.
-        El módulo de artistas se conectará cuando su servicio esté disponible.
+        Gestiona las cuentas, consulta los festivales y supervisa el catálogo, el stock y
+        las fichas del cartel.
     </p>
 </aside>
 

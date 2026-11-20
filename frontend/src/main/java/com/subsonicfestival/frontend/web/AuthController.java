@@ -35,7 +35,7 @@ public class AuthController {
         this.sesion = sesion;
     }
 
-    @GetMapping({"/login", "/cuenta"})
+    @GetMapping({"/login", "/login.html"})
     public String login(
             @RequestParam(required = false) String vista,
             @RequestParam(required = false) String motivo,

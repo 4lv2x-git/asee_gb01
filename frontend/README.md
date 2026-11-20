@@ -2,8 +2,8 @@
 
 Interfaz web de **Subsonic Festival 2027**, construida con **Spring Boot**, **Spring MVC**
 y **Thymeleaf**. La página principal se sirve como HTML estático con su hoja de estilos
-y `site.js`; el área de acceso, el perfil y el panel de administración se renderizan en
-el servidor.
+y `site.js`; el área de acceso, el perfil, los catálogos de artistas y blog y el panel de
+administración se renderizan en el servidor.
 
 ## Páginas
 
@@ -15,6 +15,9 @@ el servidor.
 | `/admin` | Panel de administración: gestión de usuarios. |
 | `/admin/eventos` | Consulta de festivales y eventos registrados en `service-festivals`. |
 | `/admin/inventario` | Catálogo y stock de entradas, pases y merchandising del gestor de inventario. |
+| `/admin/artistas` | Fichas del cartel publicadas por el servicio Artists & Blog. |
+| `/artistas`, `/blog` | Catálogos renderizados con Thymeleaf a partir de Artists & Blog. |
+| `/recintos.html` | Gestor de espacios y recintos (`subsonic-grounds`). |
 | `/cuenta` | Redirección usada por el enlace «Acceso» de la portada: lleva al perfil, al panel de administración o al formulario de acceso según la sesión. |
 | `/api/sesion` | Estado público de la sesión (nombre e iniciales) que usa la portada para mostrar el acceso al perfil cuando hay sesión iniciada. |
 
@@ -30,16 +33,18 @@ frontend/
 └── src/main/
     ├── java/com/subsonicfestival/frontend/
     │   ├── FrontendApplication.java     # Punto de entrada de Spring Boot
-    │   └── GatewayController.java       # Proxy hacia los microservicios
+    │   ├── GatewayController.java       # Proxy hacia los microservicios
+    │   ├── artistsblog/                 # Cliente y vistas de Artists & Blog
     │   └── web/
-    │       ├── AuthController.java               # /login, /registro, /recuperar, /restablecer, /logout
+    │       ├── AuthController.java               # /login, /cuenta, /registro, /recuperar, /logout
     │       ├── PerfilController.java             # /perfil y acciones del área personal
     │       ├── AdminController.java              # /admin y gestión de usuarios
-    │       ├── AdminEventosController.java        # /admin/eventos (solo lectura)
-    │       ├── AdminInventarioController.java     # /admin/inventario (solo lectura)
-    │       ├── EventosClient.java                 # Cliente Java de service-festivals
-    │       ├── InventarioClient.java              # Cliente Java del gestor de inventario
-    │       ├── ServicioExternoException.java      # Fallos de microservicios externos
+    │       ├── AdminEventosController.java       # /admin/eventos (solo lectura)
+    │       ├── AdminInventarioController.java    # /admin/inventario (solo lectura)
+    │       ├── AdminArtistasController.java      # /admin/artistas (solo lectura)
+    │       ├── EventosClient.java                # Cliente Java de service-festivals
+    │       ├── InventarioClient.java             # Cliente Java del gestor de inventario
+    │       ├── ServicioExternoException.java     # Fallos de microservicios externos
     │       ├── SesionApiController.java          # /api/sesion para la portada estática
     │       ├── UsuariosAuthClient.java           # Cliente Java de subsonic-users-auth
     │       ├── UsuariosAuthException.java        # Errores normalizados de la API
@@ -58,24 +63,26 @@ frontend/
         │   ├── admin.html
         │   ├── admin-eventos.html
         │   ├── admin-inventario.html
+        │   ├── admin-artistas.html
         │   ├── admin-editar.html
         │   ├── admin-password.html
-        │   ├── fragments/navigation.html
-        │   ├── artists-blog/              # Catálogo y detalle de artistas/blog
         │   ├── confirmar-eliminar.html
+        │   ├── artists-blog/              # Catálogo y detalle de artistas/blog
         │   └── fragments/
-        │       └── comun.html           # Cabeceras, pie y alertas compartidas
+        │       ├── comun.html            # Cabeceras, pie, alertas y menú del panel
+        │       └── navigation.html       # Navegación de las vistas de artistas/blog
         └── static/
             ├── index.html               # Página principal (con preview de recintos)
-            ├── artistas.html            # Alias legado; la vista completa usa Thymeleaf
-            ├── blog.html                # Alias legado; la vista completa usa Thymeleaf
+            ├── artistas.html            # Alias legado de /artistas (controlado por Thymeleaf)
+            ├── blog.html                # Alias legado de /blog (controlado por Thymeleaf)
             ├── festivales.html          # Catálogo de festivales y pases
             ├── tienda.html              # Tienda conectada al inventario
             ├── pedidos.html             # Historial y detalle de pedidos
             ├── recintos.html            # Gestor de espacios / recintos (grounds)
             ├── css/
             │   ├── styles.css           # Estilos de la página principal
-            │   └── account.css          # Acceso, perfil y administración
+            │   ├── account.css          # Acceso, perfil y administración
+            │   └── artists-blog.css     # Catálogos de artistas y blog
             └── js/
                 ├── site.js              # Acceso al perfil en la portada según la sesión
                 ├── cuenta.js            # Mostrar u ocultar contraseñas en las páginas de cuenta
@@ -93,9 +100,10 @@ frontend/
 - Maven 3.8 o superior.
 - El microservicio [`subsonic-users-auth`](../components/subsonic-users-auth/README.md)
   en marcha para usar el acceso, el perfil y el panel de administración.
-- Opcionalmente, `service-festivals` y `subsonic-inventory-manager` para los módulos
-  de eventos e inventario. Si no están disponibles, el panel sigue cargando y
-  muestra un aviso en la propia página.
+- Opcionalmente, `service-festivals`, `subsonic-inventory-manager` y
+  `service-artists-blog` para los módulos de eventos, inventario y artistas. Si no
+  están disponibles, el panel sigue cargando y muestra un aviso en la propia página.
+- Opcionalmente, `subsonic-grounds` para el gestor de recintos de `/recintos.html`.
 
 ## Arrancar el servicio de usuarios
 
@@ -103,14 +111,14 @@ Desde la raíz del repositorio:
 
 ```bash
 cd components/subsonic-users-auth
-cp .env.example .env
 docker compose up --build
 ```
 
 La API de usuarios queda disponible en `http://localhost:8000`. El arranque crea
 de forma idempotente un administrador inicial con los valores `ADMIN_EMAIL` y
-`ADMIN_PASSWORD` del archivo `.env` (por defecto
-`admin@subsonicfestival.com` / `cambia-esto-en-produccion`).
+`ADMIN_PASSWORD` de `.env.example`, que es el archivo que lee `docker-compose.yml`
+(por defecto `admin@subsonicfestival.com` / `cambia-esto-en-produccion`). Edita
+ese archivo antes de arrancar si quieres cambiar las credenciales.
 
 > `ADMIN_EMAIL` debe usar un dominio de correo válido. El validador del
 > microservicio rechaza dominios reservados como `.local`, así que no uses
@@ -132,11 +140,25 @@ están disponibles en `/artistas` y `/blog`. Si el microservicio Artists & Blog
 no está disponible, el frontend muestra una página de error en vez de presentar
 una lista vacía como si fuera válida.
 
-Configura las URL internas de los microservicios mediante `GATEWAY_EVENTS_URL`,
-`GATEWAY_ARTISTS_URL`, `GATEWAY_AUTH_URL` y `GATEWAY_INVENTORY_URL`. Artists &
-Blog publica el puerto 8002 en el host cuando se inicia con Docker Compose.
+Configura las URL internas según qué microservicios arranques en local:
+
+| Variable | Servicio | Valor local habitual |
+| --- | --- | --- |
+| `USERS_AUTH_API_URL` | Acceso, perfil y administración (servidor) | `http://localhost:8000` |
+| `GATEWAY_EVENTS_URL` | Festivales y eventos | `http://localhost:8000` si arrancas `service-festivals` |
+| `GATEWAY_ARTISTS_URL` | Artistas y blog | `http://localhost:8002` |
+| `GATEWAY_INVENTORY_URL` | Inventario y pedidos | `http://localhost:8081` |
+| `GATEWAY_GROUNDS_URL` | Recintos | `http://localhost:8004` |
+| `GATEWAY_AUTH_URL` | Proxy heredado usado por los formularios JS de la tienda | `http://localhost:8000` |
+
+Los servicios de usuarios y festivales usan ambos el puerto 8000 en local, así
+que debes arrancar uno a la vez o asignarles puertos distintos. Las vistas
+Thymeleaf (/perfil, /admin y sus módulos) siempre usan la URL del servidor
+(`USERS_AUTH_API_URL`); `GATEWAY_AUTH_URL` solo afecta al formulario heredado de
+la portada.
 
 ```powershell
+$env:USERS_AUTH_API_URL = "http://localhost:8001"
 $env:GATEWAY_ARTISTS_URL = "http://localhost:8002"
 mvn spring-boot:run
 ```
@@ -167,10 +189,15 @@ java -jar target/subsonic-frontend-1.0.0.jar
 
 ## Conexión con la API de usuarios
 
-Todas las llamadas a `subsonic-users-auth` se hacen desde Java con
-`UsuariosAuthClient` (`RestClient`). El navegador nunca habla directamente con la
-API de usuarios ni recibe el JWT, por lo que no hace falta configurar CORS en el
-microservicio.
+Las llamadas del área de cuenta y administración a `subsonic-users-auth` se hacen
+desde Java con `UsuariosAuthClient` (`RestClient`). En ese flujo el navegador no
+recibe el JWT: solo guarda la cookie `JSESSIONID`, por lo que no hace falta
+configurar CORS en el microservicio.
+
+Las páginas heredadas de la tienda y el carrito conservan un formulario que usa
+`/api/gateway/auth/login` y guarda el token en `localStorage`. Ese token es
+ajeno a `/perfil` y `/admin`: para esas rutas hay que iniciar sesión con el
+formulario de `/login`, que sí crea la sesión del servidor.
 
 La URL de destino se puede cambiar con la variable de entorno
 `USERS_AUTH_API_URL` o con la propiedad
@@ -252,8 +279,14 @@ inventario, stock bajo y agotados. Permite buscar y filtrar por tipo (`entrada`,
 `pase`, `merchandising`) y disponibilidad. También es de solo lectura: las altas y
 los ajustes de stock se hacen en el gestor de inventario.
 
-El módulo de **artistas** permanece deshabilitado en la barra lateral hasta que
-su componente esté disponible.
+#### Artistas
+
+`/admin/artistas` consulta `GET /v1/artistas` y `GET /v1/artistas/{id}` de
+`service-artists-blog` a través de `ArtistsBlogApiClient`. Muestra una ficha por
+artista con biografía, número de eventos vinculados, canciones destacadas y
+enlaces oficiales, con búsqueda por nombre, ID o biografía. Es de solo lectura:
+las altas y los cambios de ficha corresponden al microservicio. Si el servicio
+no está disponible, la página se muestra con un aviso.
 
 ## Notas
 

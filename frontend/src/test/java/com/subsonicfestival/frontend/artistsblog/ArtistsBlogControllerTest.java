@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.subsonicfestival.frontend.artistsblog.ArtistsBlogApiClient.ArticleDetail;
@@ -21,8 +22,11 @@ import com.subsonicfestival.frontend.artistsblog.ArtistsBlogApiClient.ArtistDeta
 import com.subsonicfestival.frontend.artistsblog.ArtistsBlogApiClient.ArtistSummary;
 import com.subsonicfestival.frontend.artistsblog.ArtistsBlogApiClient.SocialLinks;
 import com.subsonicfestival.frontend.artistsblog.ArtistsBlogApiClient.Song;
+import com.subsonicfestival.frontend.web.Sesion;
+import com.subsonicfestival.frontend.web.Textos;
 
 @WebMvcTest(ArtistsBlogController.class)
+@Import({Sesion.class, Textos.class})
 class ArtistsBlogControllerTest {
 
     @Autowired

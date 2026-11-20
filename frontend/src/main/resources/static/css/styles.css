@@ -1966,66 +1966,6 @@ section[id] {
     color: #55e6ff;
 }
 
-.auth-orb {
-    position: fixed;
-    z-index: 1;
-    width: 420px;
-    height: 420px;
-    border-radius: 50%;
-    filter: blur(38px);
-    opacity: 0.32;
-    pointer-events: none;
-    transition: transform 0.12s linear;
-}
-
-.auth-orb--one {
-    left: -130px;
-    bottom: 5%;
-    background: #124ed0;
-}
-
-.auth-orb--two {
-    right: -180px;
-    top: 8%;
-    background: #0bb4ff;
-}
-
-#neural-glow-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-
-.auth-topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 5;
-    min-height: 76px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    border-bottom: 1px solid rgba(245, 241, 232, 0.12);
-    background: rgba(7, 7, 9, 0.72);
-    backdrop-filter: blur(16px);
-}
-
-.auth-topbar nav {
-    display: flex;
-    gap: 18px;
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.auth-topbar nav a:first-child {
-    color: var(--lime);
-}
-
 .auth-layout {
     padding-top: 116px;
 }
