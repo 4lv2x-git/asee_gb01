@@ -133,6 +133,68 @@ async function loadArtists() {
     }
 }
 
+function formatMoney(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return "—";
+    return new Intl.NumberFormat("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+}
+
+async function loadGroundsPreview() {
+    const grid = document.querySelector("#groundHomeGrid");
+    if (!grid) return;
+    grid.innerHTML = '<div class="loading-card loading-card--wide">Cargando espacios...</div>';
+
+    try {
+        const grounds = await api("/api/gateway/grounds");
+        const list = Array.isArray(grounds) ? grounds : [];
+        if (!list.length) {
+            grid.innerHTML = `
+                <div class="empty-state empty-state--wide">
+                    <strong>Aún no hay espacios publicados</strong>
+                    <p>Cuando el Gestor de Espacios publique recintos aparecerán aquí.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const order = { disponible: 0, reservado: 1, ocupado: 2 };
+        const priority = ground => order[String(ground.estado || "").toLowerCase()] ?? 3;
+        const preview = [...list]
+            .sort((a, b) => priority(a) - priority(b) || Number(a.precio) - Number(b.precio))
+            .slice(0, 3);
+
+        grid.innerHTML = preview.map(ground => {
+            const status = String(ground.estado || "").toLowerCase();
+            const services = Array.isArray(ground.servicios_incluidos) ? ground.servicios_incluidos.slice(0, 2) : [];
+            return `
+                <article class="ground-home-card">
+                    <div class="ground-home-card__top">
+                        <span class="status-badge ${status === "disponible" ? "status-badge--ok" : status === "reservado" ? "status-badge--pending" : "status-badge--muted"}">
+                            ${escapeHtml(ground.estado || "Sin estado")}
+                        </span>
+                        <span class="ground-home-card__event">Evento ${escapeHtml(ground.evento_id || "—")}</span>
+                    </div>
+                    <h3>${escapeHtml(ground.tipo || "Espacio")}</h3>
+                    <p class="ground-home-card__meta">${escapeHtml(ground.ubicacion || "Ubicación por confirmar")} · ${escapeHtml(ground.dimensiones || "Dimensiones por confirmar")}</p>
+                    ${services.length ? `<ul class="ground-services">${services.map(service => `<li class="ground-service">${escapeHtml(service)}</li>`).join("")}</ul>` : ""}
+                    <div class="ground-home-card__footer">
+                        <strong>${escapeHtml(formatMoney(ground.precio))} €</strong>
+                        <a class="btn btn--ghost btn--small" href="/recintos.html?id=${encodeURIComponent(ground.id)}">Ver espacio</a>
+                    </div>
+                </article>
+            `;
+        }).join("");
+    } catch (error) {
+        grid.innerHTML = `
+            <div class="empty-state empty-state--wide empty-state--error">
+                <strong>No se pudo cargar el mapa de espacios</strong>
+                <p>El Gestor de Espacios no responde. Puedes consultar el catálogo completo en la página de recintos.</p>
+                <a class="btn btn--ghost" href="/recintos.html">Ir a recintos</a>
+            </div>
+        `;
+    }
+}
+
 function renderGlobe(festivals) {
     const globe = document.querySelector("#festivalGlobe");
     if (!window.Globe) return;
@@ -379,6 +441,7 @@ renderCart();
 updateAccountLink();
 loadFestivals();
 loadArtists();
+loadGroundsPreview();
 
 if (location.hash === "#cart") openModal("cartModal");
 if (location.hash === "#account") openModal("accountModal");

@@ -109,6 +109,11 @@ async function openFestival(id) {
             <article><span>Estado</span><strong>${escapeHtml(festival.estado || "Publicado")}</strong></article>
         `;
 
+        const groundsLink = document.querySelector("#festivalGroundsLink");
+        if (groundsLink) {
+            groundsLink.href = `/recintos.html?evento=${encodeURIComponent(festival.id)}`;
+        }
+
         document.querySelector("#festivalPasses").innerHTML =
             (passes.data || []).map((pass, index) => `
                 <article class="ticket pass-card ${index === 0 ? "pass-card--selected" : ""}">

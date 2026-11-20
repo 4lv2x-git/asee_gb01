@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Recintos y espacios de Subsonic Festival: consulta disponibilidad, precios y alquila tu espacio como proveedor.">
+    <meta name="theme-color" content="#070709">
+    <title>Recintos y espacios · Subsonic Festival</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d8ff3e'/%3E%3Ctext x='50' y='73' font-family='Arial Black,Arial,sans-serif' font-size='64' font-weight='900' text-anchor='middle' fill='%23070709'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="site-header">
+        <div class="container header__inner">
+            <a class="logo" href="/" aria-label="Subsonic Festival, volver al inicio">
+                <img class="logo__image" src="images/logoPrincipal.png" alt="">
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a href="/festivales.html">Festivales</a>
+                <a href="/tienda.html">Tienda</a>
+                <a href="/artistas.html">Artistas</a>
+                <a href="/blog.html">Blog</a>
+                <a class="nav-active" href="/recintos.html">Recintos</a>
+                <a href="/pedidos.html">Mis pedidos</a>
+            </nav>
+
+            <div class="header__actions">
+                <button class="cart-button" id="cartButton" type="button" aria-label="Abrir carrito">
+                    <span>Carrito</span>
+                    <strong id="cartCount">0</strong>
+                </button>
+                <a class="icon-button" href="/login.html" data-account-link aria-label="Cuenta">
+                    <img src="images/User.png" alt="">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main id="contenido">
+        <section class="section grounds-page">
+            <div class="container">
+                <div class="store-hero grounds-hero">
+                    <p class="eyebrow"><span class="eyebrow__dot"></span> Recintos y espacios</p>
+                    <h1>Tu espacio.<br><span class="text-lime">Tu escenario.</span></h1>
+                    <p class="store-hero__lead">
+                        Consulta los espacios disponibles dentro del festival, sus dimensiones, servicios y precio.
+                        Si eres proveedor, reserva el tuyo en un clic; si eres administrador, publica y gestiona el mapa completo.
+                    </p>
+                    <div class="grounds-hero__actions">
+                        <button class="btn btn--primary" id="newGroundButton" type="button" hidden>Publicar espacio</button>
+                        <a class="btn btn--ghost" href="/festivales.html">Ver festivales</a>
+                        <button class="btn btn--ghost" id="groundsLoginButton" type="button" data-open-login>Entrar como proveedor</button>
+                        <button class="btn btn--ghost" id="groundsLogoutButton" type="button" hidden>Cerrar sesión</button>
+                    </div>
+                    <p class="grounds-session" id="groundsSession" aria-live="polite" hidden></p>
+                </div>
+
+                <div class="store-stats grounds-stats" aria-label="Resumen de recintos">
+                    <article>
+                        <strong id="statGrounds">—</strong>
+                        <span>espacios publicados</span>
+                    </article>
+                    <article>
+                        <strong id="statAvailable">—</strong>
+                        <span>disponibles ahora</span>
+                    </article>
+                    <article>
+                        <strong id="statSpacesTypes">—</strong>
+                        <span>tipos de espacio</span>
+                    </article>
+                    <article>
+                        <strong id="statMinPrice">—</strong>
+                        <span>precio más bajo</span>
+                    </article>
+                </div>
+
+                <div class="store-toolbar">
+                    <div class="store-search">
+                        <label class="sr-only" for="groundQuery">Buscar recintos</label>
+                        <input id="groundQuery" type="search" placeholder="Buscar por tipo, ubicación, evento o servicio..." autocomplete="off">
+                    </div>
+
+                    <div class="store-toolbar__row">
+                        <div class="store-categories" id="groundTypes" role="group" aria-label="Filtrar por tipo de espacio">
+                            <button class="active" type="button" data-ground-type="todos">Todos</button>
+                        </div>
+
+                        <div class="grounds-filters">
+                            <label class="store-sort" for="groundStatus">
+                                Estado
+                                <select id="groundStatus">
+                                    <option value="todos">Todos</option>
+                                    <option value="disponible">Disponibles</option>
+                                    <option value="reservado">Reservados</option>
+                                    <option value="ocupado">Ocupados</option>
+                                </select>
+                            </label>
+
+                            <label class="store-sort" for="groundSort">
+                                Ordenar
+                                <select id="groundSort">
+                                    <option value="relevancia">Relevancia</option>
+                                    <option value="precio-asc">Precio: menor a mayor</option>
+                                    <option value="precio-desc">Precio: mayor a menor</option>
+                                    <option value="tipo">Tipo A–Z</option>
+                                    <option value="ubicacion">Ubicación A–Z</option>
+                                </select>
+                            </label>
+
+                            <label class="store-sort" for="groundMaxPrice">
+                                Precio máx.
+                                <input id="groundMaxPrice" type="number" min="0" step="10" placeholder="€">
+                            </label>
+                        </div>
+                    </div>
+
+                    <p class="store-results" id="groundsCount" aria-live="polite">Cargando espacios...</p>
+                </div>
+
+                <p class="grounds-event-filter" id="groundsEventFilter" hidden></p>
+
+                <div class="ground-grid" id="groundGrid" aria-live="polite">
+                    <div class="loading-card loading-card--wide">Cargando espacios...</div>
+                </div>
+
+                <p class="store-note">
+                    Los espacios se consultan directamente al Gestor de Espacios. El estado y el proveedor se actualizan
+                    al registrar un alquiler, y la disponibilidad se refresca tras cada operación.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Detalle del espacio -->
+    <div class="modal" id="groundModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="groundModalTitle">
+        <div class="modal__backdrop" data-close-modal="groundModal"></div>
+        <div class="modal__panel modal__panel--medium">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Detalle del espacio</p>
+                    <h2 id="groundModalTitle">Espacio</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="groundModal" aria-label="Cerrar">×</button>
+            </header>
+            <div id="groundDetail" class="ground-detail"></div>
+        </div>
+    </div>
+
+    <!-- Alta y edición de espacios -->
+    <div class="modal" id="groundFormModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="groundFormTitle">
+        <div class="modal__backdrop" data-close-modal="groundFormModal"></div>
+        <div class="modal__panel modal__panel--medium">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Gestión de espacios</p>
+                    <h2 id="groundFormTitle">Publicar espacio</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="groundFormModal" aria-label="Cerrar">×</button>
+            </header>
+
+            <form id="groundForm" class="ground-form">
+                <input id="groundId" type="hidden">
+
+                <div class="ground-form__grid">
+                    <div class="ground-form__field">
+                        <label for="groundEvent">Evento</label>
+                        <input id="groundEvent" type="text" required placeholder="ID del evento (p. ej. 1)" autocomplete="off">
+                    </div>
+
+                    <div class="ground-form__field">
+                        <label for="groundType">Tipo de espacio</label>
+                        <input id="groundType" type="text" required list="groundTypeList" placeholder="Comida, merchandising, escenario..." autocomplete="off">
+                        <datalist id="groundTypeList">
+                            <option value="Comida"></option>
+                            <option value="Merchandising"></option>
+                            <option value="Barra"></option>
+                            <option value="Escenario"></option>
+                            <option value="Zona chill"></option>
+                            <option value="Servicios"></option>
+                        </datalist>
+                    </div>
+
+                    <div class="ground-form__field">
+                        <label for="groundDimensions">Dimensiones</label>
+                        <input id="groundDimensions" type="text" required placeholder="4 x 3 m" autocomplete="off">
+                    </div>
+
+                    <div class="ground-form__field">
+                        <label for="groundLocation">Ubicación</label>
+                        <input id="groundLocation" type="text" placeholder="Zona norte, junto al escenario 2" autocomplete="off">
+                    </div>
+
+                    <div class="ground-form__field">
+                        <label for="groundPrice">Precio (€)</label>
+                        <input id="groundPrice" type="number" required min="0" step="0.01" placeholder="450">
+                    </div>
+
+                    <div class="ground-form__field">
+                        <label for="groundStatusInput">Estado</label>
+                        <select id="groundStatusInput">
+                            <option value="disponible">Disponible</option>
+                            <option value="reservado">Reservado</option>
+                            <option value="ocupado">Ocupado</option>
+                        </select>
+                    </div>
+
+                    <div class="ground-form__field ground-form__field--wide">
+                        <label for="groundServices">Servicios incluidos</label>
+                        <input id="groundServices" type="text" placeholder="Electricidad, agua, iluminación" autocomplete="off">
+                        <span class="ground-form__hint">Separa los servicios con comas.</span>
+                    </div>
+                </div>
+
+                <p id="groundFormMessage" class="form-message" aria-live="polite"></p>
+
+                <div class="ground-form__actions">
+                    <button class="btn btn--ghost" type="button" data-close-modal="groundFormModal">Cancelar</button>
+                    <button class="btn btn--primary" type="submit" id="groundFormSubmit">Guardar espacio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inicio de sesión -->
+    <div class="modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+        <div class="modal__backdrop" data-close-modal="loginModal"></div>
+        <div class="modal__panel modal__panel--small">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Subsonic</p>
+                    <h2 id="loginTitle">Iniciar sesión</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="loginModal" aria-label="Cerrar">×</button>
+            </header>
+            <form id="loginForm" class="account-form">
+                <label for="loginEmail">Correo electrónico</label>
+                <input id="loginEmail" name="email" type="email" required autocomplete="email" placeholder="tu@email.com">
+                <label for="loginPassword">Contraseña</label>
+                <div class="password-field">
+                    <input id="loginPassword" name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña">
+                    <button type="button" id="togglePassword" aria-label="Mostrar contraseña">
+                        <img src="images/OjoCerrado.png" alt="">
+                    </button>
+                </div>
+                <button class="btn btn--primary btn--full" type="submit">Entrar</button>
+                <p id="loginMessage" class="form-message" aria-live="polite"></p>
+                <p class="auth-switch">¿No tienes cuenta? <a href="/register.html">Regístrate</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/commerce.js"></script>
+    <script src="js/recintos.js"></script>
+</body>
+</html>
