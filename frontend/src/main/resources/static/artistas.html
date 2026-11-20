@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Artistas · Subsonic Festival</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+<header class="site-header"><div class="container header__inner">
+<a class="logo" href="/"><img class="logo__image" src="images/logoPrincipal.png" alt=""><span class="logo__text">Subsonic<span>Festival 2027</span></span></a>
+<nav class="site-nav"><a href="/festivales.html">Festivales</a><a href="/tienda.html">Tienda</a><a class="nav-active" href="/artistas.html">Artistas</a><a href="/blog.html">Blog</a></nav>
+<div class="header__actions"><a class="cart-button" href="/#cart"><span>Carrito</span></a><a class="icon-button" href="/login.html"><img src="images/User.png" alt="Cuenta"></a></div>
+</div></header>
+<main><section class="section"><div class="container"><div class="section-head"><div><p class="eyebrow">Cartel</p><h1>Artistas.</h1></div></div><div class="artist-grid" id="artistGrid"><div class="loading-card loading-card--wide">Cargando artistas...</div></div></div></section></main>
+<script>
+const artistImages=['images/Charlotte_de_Witte.png','images/Amelie_Lens.jpg','images/Boris_Brejcha.jpg','images/Adam_Beyer.webp','images/Carl_Cox.jpg','images/Nina_Kraviz.jpg'];
+fetch('/api/gateway/artists').then(r=>r.ok?r.json():Promise.reject()).then(a=>{
+const fallback=artistImages.map((image,index)=>`<article class="artist-card"><img src="${image}" alt="${['Charlotte de Witte','Amelie Lens','Boris Brejcha','Adam Beyer','Carl Cox','Nina Kraviz'][index]}"><div><h3>${['Charlotte de Witte','Amelie Lens','Boris Brejcha','Adam Beyer','Carl Cox','Nina Kraviz'][index]}</h3><p>${index%2?'Electrónica':'Techno'}</p></div></article>`).join('');
+document.querySelector('#artistGrid').innerHTML=a.length?a.map((x,i)=>`<article class="artist-card"><img src="${x.image||x.imagen||artistImages[i%artistImages.length]}" alt="${x.nombre||x.name||''}"><div><h3>${x.nombre||x.name||'Artista'}</h3><p>${x.genero||x.genre||'Live act'}</p></div></article>`).join(''):fallback;
+}).catch(()=>{
+document.querySelector('#artistGrid').innerHTML=artistImages.map((image,index)=>`<article class="artist-card"><img src="${image}" alt="${['Charlotte de Witte','Amelie Lens','Boris Brejcha','Adam Beyer','Carl Cox','Nina Kraviz'][index]}"><div><h3>${['Charlotte de Witte','Amelie Lens','Boris Brejcha','Adam Beyer','Carl Cox','Nina Kraviz'][index]}</h3><p>${index%2?'Electrónica':'Techno'}</p></div></article>`).join('');
+});
+</script>
+</body></html>
