@@ -1,0 +1,343 @@
+# ==============================================================================
+# Subsonic Festival - BACKEND-ONLY Docker Compose
+# ==============================================================================
+# Objetivo
+#   Levantar TODOS los microservicios del backend y TODAS sus bases de datos con
+#   un unico `docker compose up`, manteniendo cada base de datos aislada en su
+#   propio contenedor y volumen. El frontend (Spring Boot, puerto 8080) NO se
+#   incluye: se ejecuta fuera de Docker, como antes.
+#
+# Uso (desde la raiz del repositorio)
+#   docker compose -f docker-compose.yml up --build -d
+#   docker compose -f docker-compose.yml ps
+#   docker compose -f docker-compose.yml down        # conserva los volumenes
+#   docker compose -f docker-compose.yml down -v     # borra tambien los datos
+#
+# Puertos publicados en el host (todos ligados a 127.0.0.1 por seguridad)
+#   Servicio / API                     Host       Contenedor
+#   subsonic-auth (usuarios)           8000       8000
+#   subsonic-festivals (eventos)       8001       8000   <-- antes 8000; ver nota
+#   subsonic-artists-blog              8002       8000
+#   subsonic-grounds (recintos)        8004       8000
+#   subsonic-inventory-manager         8081       8081
+#   mongo (auth, replica set rs0)      27017      27017
+#   mongo-artists                      27018      27017
+#   postgres-festivals                 5433       5432
+#   postgres-inventory                 5434       5432
+#
+# Nota sobre el frontend
+#   El frontend espera GATEWAY_EVENTS_URL=http://localhost:8000 por defecto,
+#   pero ese puerto lo ocupa subsonic-auth. Con este compose hay que arrancar el
+#   frontend con:
+#     $env:GATEWAY_EVENTS_URL = "http://localhost:8001"
+#   El resto de valores por defecto del frontend ya coinciden con este compose:
+#     USERS_AUTH_API_URL=http://localhost:8000
+#     GATEWAY_ARTISTS_URL=http://localhost:8002
+#     GATEWAY_INVENTORY_URL=http://localhost:8081
+#     GATEWAY_GROUNDS_URL=http://localhost:8004
+#
+# Bases de datos: una por componente, sin compartir volumenes
+#   mongo            -> subsonic_users      (replica set rs0, init incluida aqui)
+#   mongo-artists    -> subsonic_festival   (colecciones artistas / articulos)
+#   postgres-festivals -> festivals_db
+#   postgres-inventory -> inventory_db
+#   grounds          -> SQLite en /data/espacios.db (volumen propio)
+#
+# Todo lo necesario esta definido aqui: no se usan archivos .env ni scripts de
+# inicializacion externos. Los Dockerfiles de cada componente se mantienen y se
+# usan como contextos de build. El compose antiguo de cada componente NO se ha
+# borrado; este fichero es independiente y se ejecuta desde la raiz.
+# ==============================================================================
+
+name: subsonic-backend
+
+# Valores compartidos. Anclas YAML: se resuelven antes de que Compose lea el
+# fichero, por lo que no son "servicios" ni opciones extra.
+x-common:
+  postgres-user: &postgres_user postgres
+  postgres-password: &postgres_password postgres
+  jwt-secret: &jwt_secret "dev-only-cambia-esto"
+  internal-api-key: &internal_api_key "dev-only-cambia-esto-tambien"
+
+services:
+  # ===========================================================================
+  # BASES DE DATOS
+  # ===========================================================================
+
+  # MongoDB usado por subsonic-users-auth. Se arranca como replica set rs0
+  # porque el servicio original lo hace asi. La iniciacion del replica set se
+  # hace abajo, en `mongo-rs-init`, sin depender de mongo-init.js.
+  mongo:
+    image: mongo:7
+    container_name: subsonic-mongo
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo_auth_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - subsonic-backend
+
+  # Contenedor de un sola ejecucion que initia el replica set rs0.
+  # Es idempotente: si el volumen ya tenia el replica set iniciado, imprime el
+  # error y termina con codigo 0. `auth` espera a que termine correctamente.
+  mongo-rs-init:
+    image: mongo:7
+    container_name: subsonic-mongo-rs-init
+    restart: "no"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    entrypoint:
+      - mongosh
+      - --host
+      - mongo
+      - --port
+      - "27017"
+      - --quiet
+      - --eval
+      - |
+        try {
+          rs.initiate({_id: "rs0", members: [{_id: 0, host: "mongo:27017"}]});
+          print("Replica set rs0 iniciado correctamente");
+        } catch (error) {
+          print("Replica set ya iniciado o aviso: " + error);
+        }
+        // Esperar a que el nodo sea PRIMARY antes de dejar arrancar `auth`.
+        for (let i = 0; i < 30; i++) {
+          try {
+            if (db.hello().isWritablePrimary) {
+              print("MongoDB PRIMARY listo");
+              break;
+            }
+          } catch (error) {
+            // La conexion se reinicia justo despues de rs.initiate().
+          }
+          sleep(1000);
+        }
+    networks:
+      - subsonic-backend
+
+  # MongoDB exclusivo de service-artists-blog (version 8, sin replica set).
+  mongo-artists:
+    image: mongo:8
+    container_name: subsonic-mongo-artists
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27018:27017"
+    volumes:
+      - artists_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - subsonic-backend
+
+  # PostgreSQL exclusivo de service-festivals.
+  postgres-festivals:
+    image: postgres:15
+    container_name: subsonic-postgres-festivals
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: *postgres_user
+      POSTGRES_PASSWORD: *postgres_password
+      POSTGRES_DB: festivals_db
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_festivals_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d festivals_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - subsonic-backend
+
+  # PostgreSQL exclusivo de subsonic-inventory-manager.
+  postgres-inventory:
+    image: postgres:15
+    container_name: subsonic-postgres-inventory
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: *postgres_user
+      POSTGRES_PASSWORD: *postgres_password
+      POSTGRES_DB: inventory_db
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - postgres_inventory_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - subsonic-backend
+
+  # ===========================================================================
+  # MICROSERVICIOS
+  # ===========================================================================
+
+  # Autenticacion, usuarios y roles. Construye su propia imagen desde el
+  # Dockerfile del componente. El admin semilla se crea en el lifespan.
+  # NOTA: se fijo `beanie>=1.26,<2` en el pyproject del componente porque
+  # beanie 2.x no es compatible con Motor 3.x y el servicio no arrancaba.
+  auth:
+    build:
+      context: ./components/subsonic-users-auth
+      dockerfile: Dockerfile
+    image: subsonic/users-auth:local
+    container_name: subsonic-auth
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-rs-init:
+        condition: service_completed_successfully
+    environment:
+      APP_NAME: subsonic-users-auth
+      APP_ENV: local
+      API_PREFIX: /v1
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB: subsonic_users
+      JWT_SECRET: *jwt_secret
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      INTERNAL_API_KEY: *internal_api_key
+      # El codigo espera el hostname legacy `subsonic-spaces`. Se resuelve al
+      # contenedor de grounds mediante el alias de red definido mas abajo.
+      # OJO: grounds no implementa /v1/interno/proveedores/{id}/espacios, asi
+      # que /v1/usuarios/historial-espacios devolvera 502 hasta que esa ruta
+      # se implemente. El resto de la autenticacion no depende de ello.
+      SPACES_SERVICE_URL: http://subsonic-spaces:8000/v1
+      SPACES_TIMEOUT_SECONDS: 5
+      ADMIN_EMAIL: admin@subsonicfestival.com
+      ADMIN_PASSWORD: cambia-esto-en-produccion
+      SMTP_HOST: ""
+      SMTP_PORT: ""
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      CORS_ORIGINS: '["http://localhost:8080","http://localhost:3000","http://localhost:5173"]'
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      - subsonic-backend
+
+  # Artistas y blog. Si la coleccion esta vacia, siembra artistas demo al arrancar.
+  artists-blog:
+    build:
+      context: ./components/service-artists-blog
+      dockerfile: Dockerfile
+    image: subsonic/artists-blog:local
+    container_name: subsonic-artists-blog
+    restart: unless-stopped
+    depends_on:
+      mongo-artists:
+        condition: service_healthy
+    environment:
+      MONGODB_URL: mongodb://mongo-artists:27017
+      MONGODB_DATABASE: subsonic_festival
+      JWT_SECRET: *jwt_secret
+      JWT_ALGORITHM: HS256
+    ports:
+      - "127.0.0.1:8002:8000"
+    networks:
+      - subsonic-backend
+
+  # Festivales, escaleta y pases. Publicado en 8001 para no chocar con auth.
+  festivals:
+    build:
+      context: ./components/service-festivals
+      dockerfile: Dockerfile
+    image: subsonic/festivals:local
+    container_name: subsonic-festivals
+    restart: unless-stopped
+    depends_on:
+      postgres-festivals:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-festivals:5432/festivals_db
+    ports:
+      - "127.0.0.1:8001:8000"
+    networks:
+      - subsonic-backend
+
+  # Inventario y pedidos (Spring Boot). El Dockerfile ya fija SERVER_PORT=8081.
+  inventory-manager:
+    build:
+      context: ./components/subsonic-inventory-manager
+      dockerfile: Dockerfile
+    image: subsonic/inventory-manager:local
+    container_name: subsonic-inventory-manager
+    restart: unless-stopped
+    depends_on:
+      postgres-inventory:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-inventory:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: *postgres_user
+      SPRING_DATASOURCE_PASSWORD: *postgres_password
+    ports:
+      - "127.0.0.1:8081:8081"
+    networks:
+      - subsonic-backend
+
+  # Recintos y espacios. No tiene base de datos de servidor: usa SQLite en un
+  # volumen propio. El alias `subsonic-spaces` mantiene el nombre que el codigo
+  # de auth usa para referirse al gestor de espacios.
+  grounds:
+    build:
+      context: ./components/subsonic-grounds
+      dockerfile: Dockerfile
+    image: subsonic/grounds:local
+    container_name: subsonic-grounds
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: sqlite:////data/espacios.db
+    volumes:
+      - grounds_data:/data
+    ports:
+      - "127.0.0.1:8004:8000"
+    networks:
+      subsonic-backend:
+        aliases:
+          - subsonic-spaces
+
+# ==============================================================================
+# VOLUMENES: cada base de datos tiene el suyo. No se comparten datos entre
+# componentes aunque dos de ellos usen MongoDB o PostgreSQL.
+# ==============================================================================
+volumes:
+  mongo_auth_data:
+    name: subsonic_backend_mongo_auth_data
+  artists_mongo_data:
+    name: subsonic_backend_artists_mongo_data
+  postgres_festivals_data:
+    name: subsonic_backend_postgres_festivals_data
+  postgres_inventory_data:
+    name: subsonic_backend_postgres_inventory_data
+  grounds_data:
+    name: subsonic_backend_grounds_data
+
+# ==============================================================================
+# RED: todos los servicios comparten una sola red bridge para poder llamarse
+# por nombre de servicio, pero cada servicio sigue teniendo su propio stack.
+# ==============================================================================
+networks:
+  subsonic-backend:
+    name: subsonic_backend
+    driver: bridge
