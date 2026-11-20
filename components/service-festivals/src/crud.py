@@ -5,12 +5,31 @@ from . import models, schemas
 def get_evento(db: Session, evento_id: int):
     return db.query(models.EventoModel).filter(models.EventoModel.id == evento_id).first()
 
-def get_eventos(db: Session, skip: int = 0, limit: int = 20, estado: str = None, ubicacion: str = None):
+def get_eventos(
+    db: Session,
+    skip: int = 0,
+    limit: int = 20,
+    nombre: str = None,
+    ubicacion: str = None,
+    estado: str = None,
+    fecha_desde=None,
+    fecha_hasta=None,
+):
     query = db.query(models.EventoModel)
+    if nombre:
+        query = query.filter(models.EventoModel.nombre.ilike(f"%{nombre}%"))
     if estado:
         query = query.filter(models.EventoModel.estado == estado)
     if ubicacion:
-        query = query.filter(models.EventoModel.ubicacion_ciudad.ilike(f"%{ubicacion}%"))
+        query = query.filter(
+            (models.EventoModel.ubicacion_ciudad.ilike(f"%{ubicacion}%"))
+            | (models.EventoModel.ubicacion_pais.ilike(f"%{ubicacion}%"))
+            | (models.EventoModel.ubicacion_nombre.ilike(f"%{ubicacion}%"))
+        )
+    if fecha_desde:
+        query = query.filter(models.EventoModel.fecha_inicio >= fecha_desde)
+    if fecha_hasta:
+        query = query.filter(models.EventoModel.fecha_inicio <= fecha_hasta)
     total = query.count()
     items = query.offset(skip).limit(limit).all()
     return items, total

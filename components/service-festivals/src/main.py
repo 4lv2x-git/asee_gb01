@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
+from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
 from . import models, schemas, crud
 from .database import engine, get_db
 
@@ -10,6 +12,14 @@ app = FastAPI(
     title="Gestor de Eventos (Festivales y Escaleta)",
     version="1.0.0",
     description="Microservicio completo para la gestión de festivales, escaleta y pases según OpenAPI."
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 def format_evento(ev):
@@ -69,12 +79,23 @@ def listar_eventos(
     nombre: Optional[str] = None,
     ubicacion: Optional[str] = None,
     estado: Optional[str] = None,
+    fechaDesde: Optional[datetime] = None,
+    fechaHasta: Optional[datetime] = None,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
     skip = (page - 1) * limit
-    items, total = crud.get_eventos(db, skip=skip, limit=limit, estado=estado, ubicacion=ubicacion)
+    items, total = crud.get_eventos(
+        db,
+        skip=skip,
+        limit=limit,
+        nombre=nombre,
+        estado=estado,
+        ubicacion=ubicacion,
+        fecha_desde=fechaDesde,
+        fecha_hasta=fechaHasta,
+    )
     total_pages = (total + limit - 1) // limit if limit > 0 else 1
     
     return {

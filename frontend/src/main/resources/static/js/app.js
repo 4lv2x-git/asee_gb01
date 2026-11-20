@@ -186,9 +186,27 @@ async function loadGroundsPreview() {
     }
 }
 
-function renderGlobe(festivals) {
+async function ensureGlobeLibrary() {
+    if (window.Globe) return;
+    await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://unpkg.com/globe.gl";
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("No se pudo cargar globe.gl"));
+        document.head.appendChild(script);
+    });
+}
+
+async function renderGlobe(festivals) {
     const globe = document.querySelector("#festivalGlobe");
-    if (!window.Globe) return;
+    if (!globe) return;
+    try {
+        await ensureGlobeLibrary();
+    } catch (error) {
+        globe.innerHTML = '<div class="empty-state empty-state--wide empty-state--error"><strong>Mapa no disponible</strong><p>Comprueba tu conexión para cargar globe.gl.</p></div>';
+        return;
+    }
 
     const points = festivals
         .filter(festival => Number.isFinite(Number(festival.ubicacion?.latitud)) && Number.isFinite(Number(festival.ubicacion?.longitud)))
