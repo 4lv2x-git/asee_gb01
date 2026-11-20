@@ -11,7 +11,8 @@ frontend/
 ├── README.md
 └── src/main/
     ├── java/com/subsonicfestival/frontend/
-    │   └── FrontendApplication.java     # Punto de entrada de Spring Boot
+    │   ├── FrontendApplication.java     # Punto de entrada de Spring Boot
+    │   └── GatewayController.java       # Proxy hacia los microservicios
     └── resources/
         ├── application.properties
         ├── templates/
@@ -19,16 +20,29 @@ frontend/
         │   └── artists-blog/              # Catálogo y detalle de artistas/blog
         └── static/
             ├── index.html               # Página principal
-            └── css/                      # Estilos del sitio y del componente
+            ├── artistas.html            # Alias legado; la vista completa usa Thymeleaf
+            ├── blog.html                # Alias legado; la vista completa usa Thymeleaf
+            ├── festivales.html
+            ├── tienda.html
+            ├── pedidos.html
+            ├── css/                      # Estilos del sitio y de Artists & Blog
+            ├── images/
+            └── js/
+                ├── app.js
+                ├── commerce.js
+                ├── tienda.js
+                └── pedidos.js
 ```
 
 ## Artists & Blog
 
 Las páginas públicas de artistas y blog usan Thymeleaf y consultan el
-microservicio FastAPI mediante `ARTISTS_BLOG_API_URL` (por defecto
-`http://localhost:8000`). El listado de artistas permite filtrar por nombre; las
-fichas muestran biografía, redes, eventos y canciones. El blog ofrece listado
-paginado y artículos completos.
+microservicio Artists & Blog mediante `GATEWAY_ARTISTS_URL` (por defecto
+`http://localhost:8002`). El gateway del frontend también expone la lista de
+artistas para la portada. Las rutas completas son `/artistas`,
+`/artistas/{id}`, `/blog` y `/blog/{id}`. El listado permite filtrar por nombre;
+las fichas muestran biografía, redes, eventos y canciones. El blog ofrece
+listado paginado y artículos completos.
 
 ## Ejecutar con Spring Boot
 
@@ -44,16 +58,17 @@ están disponibles en `/artistas` y `/blog`. Si el microservicio Artists & Blog
 no está disponible, el frontend muestra una página de error en vez de presentar
 una lista vacía como si fuera válida.
 
-Para usar una URL distinta del servicio:
+Configura las URL internas de los microservicios mediante `GATEWAY_EVENTS_URL`,
+`GATEWAY_ARTISTS_URL`, `GATEWAY_AUTH_URL` y `GATEWAY_INVENTORY_URL`. Artists &
+Blog publica el puerto 8002 en el host cuando se inicia con Docker Compose.
 
 ```powershell
-$env:ARTISTS_BLOG_API_URL = "http://localhost:8000"
+$env:GATEWAY_ARTISTS_URL = "http://localhost:8002"
 mvn spring-boot:run
 ```
 
-La aplicación conecta directamente con la URL base configurada. Si el API
-Gateway del equipo está desplegado, configura aquí su dirección y confirma con
-el equipo el prefijo de rutas que expone.
+La portada consulta `/api/gateway/artists`; las vistas Thymeleaf consultan el
+mismo servicio usando `GATEWAY_ARTISTS_URL`.
 
 ## Pruebas
 

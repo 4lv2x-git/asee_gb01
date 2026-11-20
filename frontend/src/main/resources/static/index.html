@@ -19,20 +19,27 @@
     <header class="site-header">
         <div class="container header__inner">
             <a class="logo" href="#inicio" aria-label="Subsonic Festival, volver al inicio">
-                <span class="logo__mark" aria-hidden="true">S</span>
+                <img class="logo__image" src="images/logoPrincipal.png" alt="">
                 <span class="logo__text">Subsonic<span>Festival 2027</span></span>
             </a>
 
             <nav class="site-nav" aria-label="Navegación principal">
-                <a href="#cartel">Cartel</a>
+                <a href="/festivales.html">Festivales</a>
+                <a href="/tienda.html">Tienda</a>
                 <a href="/artistas">Artistas</a>
                 <a href="/blog">Blog</a>
-                <a href="#experiencia">Experiencia</a>
-                <a href="#entradas">Entradas</a>
-                <a href="#ubicacion">Ubicación</a>
+                <a href="/pedidos.html">Mis pedidos</a>
             </nav>
 
-            <a class="btn btn--primary btn--small" href="#entradas">Comprar abono</a>
+            <div class="header__actions">
+                <button class="cart-button" id="cartButton" type="button" aria-label="Abrir carrito">
+                    <span>Carrito</span>
+                    <strong id="cartCount">0</strong>
+                </button>
+                <a class="icon-button" id="accountLink" href="/login.html" aria-label="Abrir cuenta">
+                    <img src="images/User.png" alt="">
+                </a>
+            </div>
         </div>
     </header>
 
@@ -135,6 +142,10 @@
                     </p>
                 </div>
 
+                <div class="lineup-grid" id="festivalGrid" aria-live="polite">
+                    <div class="loading-card">Cargando festivales...</div>
+                </div>
+                <!--
                 <div class="lineup-grid">
                     <article class="day-card">
                         <header class="day-card__head">
@@ -184,6 +195,7 @@
                         <span class="day-card__note">+ cierre a cargo de la comunidad</span>
                     </article>
                 </div>
+                -->
 
                 <p class="lineup-more">
                     <a href="/artistas">Descubre todos los artistas →</a>
@@ -239,66 +251,18 @@
             </div>
         </section>
 
-        <!-- Entradas -->
-        <section class="section" id="entradas">
+        <!-- Artistas -->
+        <section class="section" id="artistas">
             <div class="container">
-                <div class="section-head section-head--center">
-                    <p class="eyebrow">Entradas</p>
-                    <h2>Elige tu pase.</h2>
-                    <p>Aforo limitado. Los abonos suben de precio a medida que se acercan las fechas, así que no lo dejes para mañana.</p>
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">Artistas</p>
+                        <h2>El cartel<br><span class="text-lime">del festival.</span></h2>
+                    </div>
                 </div>
-
-                <div class="ticket-grid">
-                    <article class="ticket">
-                        <div class="ticket__top">
-                            <span>Abono</span>
-                            <h3>General</h3>
-                            <p class="ticket__price"><strong>89</strong><span>€</span></p>
-                        </div>
-                        <ul class="ticket__features">
-                            <li>Acceso a los 3 días</li>
-                            <li>2 escenarios</li>
-                            <li>Zona food &amp; craft</li>
-                            <li>App oficial del festival</li>
-                        </ul>
-                        <a class="btn btn--ghost btn--full" href="#newsletter">Reservar abono</a>
-                    </article>
-
-                    <article class="ticket ticket--featured">
-                        <span class="ticket__badge">Más popular</span>
-                        <div class="ticket__top">
-                            <span>Abono</span>
-                            <h3>VIP</h3>
-                            <p class="ticket__price"><strong>149</strong><span>€</span></p>
-                        </div>
-                        <ul class="ticket__features">
-                            <li>Todo lo del abono General</li>
-                            <li>Acceso prioritario</li>
-                            <li>Zona VIP con sombra</li>
-                            <li>Barra exclusiva</li>
-                            <li>Camiseta oficial</li>
-                        </ul>
-                        <a class="btn btn--primary btn--full" href="#newsletter">Reservar VIP</a>
-                    </article>
-
-                    <article class="ticket">
-                        <div class="ticket__top">
-                            <span>Abono</span>
-                            <h3>Premium</h3>
-                            <p class="ticket__price"><strong>219</strong><span>€</span></p>
-                        </div>
-                        <ul class="ticket__features">
-                            <li>Todo lo del abono VIP</li>
-                            <li>Backstage pass</li>
-                            <li>Cena con artistas</li>
-                            <li>Parking preferente</li>
-                            <li>Camping incluido</li>
-                        </ul>
-                        <a class="btn btn--ghost btn--full" href="#newsletter">Reservar Premium</a>
-                    </article>
+                <div class="artist-grid" id="artistGrid" aria-live="polite">
+                    <div class="loading-card loading-card--wide">Cargando artistas...</div>
                 </div>
-
-                <p class="ticket-note">* Plazas limitadas. Precios con IVA incluido. Consulta las condiciones de compra y devolución.</p>
             </div>
         </section>
 
@@ -306,24 +270,13 @@
         <section class="section section--soft" id="ubicacion">
             <div class="container location">
                 <div>
-                    <p class="eyebrow">Ubicación</p>
-                    <h2>Parque de la Música.<br>Madrid.</h2>
-                    <p>
-                        Un recinto al aire libre a 15 minutos del centro, con dos escenarios, zona de camping
-                        y accesos pensados para que llegues y te quedes. Apertura de puertas a las 16:00&nbsp;h.
-                    </p>
+                    <p class="eyebrow">Encuéntranos</p>
+                    <h2>Festivales<br>en el mapa.</h2>
+                    <p>Explora los destinos publicados y selecciona uno para consultar su cartel y sus entradas.</p>
                 </div>
 
                 <div class="location__card">
-                    <div class="location__map" aria-hidden="true">
-                        <span class="location__pin"></span>
-                    </div>
-                    <div class="location__details">
-                        <p><span>Dirección</span> Av. de la Música, 12 · Madrid</p>
-                        <p><span>Metro</span> Línea 6 · Estación Sur</p>
-                        <p><span>Apertura</span> 16:00 h</p>
-                        <p><span>Accesos</span> Puerta Norte y Puerta Sur</p>
-                    </div>
+                    <div class="world-map" id="festivalGlobe" aria-label="Mapa mundial de festivales"></div>
                 </div>
             </div>
         </section>
@@ -353,7 +306,7 @@
         <div class="container footer__inner">
             <div class="footer__brand">
                 <a class="logo" href="#inicio" aria-label="Subsonic Festival, volver al inicio">
-                    <span class="logo__mark" aria-hidden="true">S</span>
+                    <img class="logo__image" src="images/logoPrincipal.png" alt="">
                     <span class="logo__text">Subsonic<span>Festival 2027</span></span>
                 </a>
                 <p>Música sin filtros desde 2021. Tres días al año en los que Madrid suena distinto.</p>
@@ -395,5 +348,54 @@
             <p>Hecho con ruido en Madrid.</p>
         </div>
     </footer>
+
+    <div class="modal" id="cartModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+        <div class="modal__backdrop" data-close-modal="cartModal"></div>
+        <div class="modal__panel">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Tu selección</p>
+                    <h2 id="cartTitle">Carrito</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="cartModal" aria-label="Cerrar">×</button>
+            </header>
+            <div id="cartItems" class="cart-items"></div>
+            <div class="cart-summary">
+                <span>Total</span>
+                <strong id="cartTotal">0 €</strong>
+            </div>
+            <button class="btn btn--primary btn--full" id="checkoutButton" type="button">Finalizar compra</button>
+        </div>
+    </div>
+
+    <div class="modal" id="accountModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+        <div class="modal__backdrop" data-close-modal="accountModal"></div>
+        <div class="modal__panel modal__panel--small">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Subsonic</p>
+                    <h2 id="accountTitle">Iniciar sesión</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="accountModal" aria-label="Cerrar">×</button>
+            </header>
+            <form id="loginForm" class="account-form">
+                <label for="loginEmail">Correo electrónico</label>
+                <input id="loginEmail" name="email" type="email" required autocomplete="email">
+                <label for="loginPassword">Contraseña</label>
+                <div class="password-field">
+                    <input id="loginPassword" name="password" type="password" required autocomplete="current-password">
+                    <button type="button" id="togglePassword" aria-label="Mostrar contraseña">
+                        <img src="images/OjoCerrado.png" alt="">
+                    </button>
+                </div>
+                <button class="btn btn--primary btn--full" type="submit">Entrar</button>
+                <p id="loginMessage" class="form-message" aria-live="polite"></p>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="https://unpkg.com/globe.gl"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

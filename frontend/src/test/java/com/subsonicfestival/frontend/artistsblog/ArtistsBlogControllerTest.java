@@ -84,6 +84,33 @@ class ArtistsBlogControllerTest {
     }
 
     @Test
+    void legacyStaticCatalogUrlsRenderTheThymeleafPages() throws Exception {
+        mockMvc.perform(get("/artistas.html"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("artists-blog/artists"));
+
+        mockMvc.perform(get("/blog.html"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("artists-blog/blog"));
+    }
+
+    @Test
+    void emptyCatalogsRenderHelpfulEmptyStates() throws Exception {
+        when(apiClient.listArtists()).thenReturn(List.of());
+        when(apiClient.listArticles(0, 10)).thenReturn(List.of());
+
+        mockMvc.perform(get("/artistas"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "Aún no hay artistas disponibles")));
+
+        mockMvc.perform(get("/blog"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "Aún no hay artículos publicados")));
+    }
+
+    @Test
     void articleDetailRendersFullContent() throws Exception {
         when(apiClient.getArticle("article-1"))
                 .thenReturn(new ArticleDetail(

@@ -1,0 +1,375 @@
+const storedToken = localStorage.getItem("subsonic-token");
+
+const state = {
+    festivals: [],
+    selectedFestival: null,
+    cart: JSON.parse(localStorage.getItem("subsonic-cart") || "[]"),
+    token: storedToken && storedToken !== "undefined" && storedToken !== "null" ? storedToken : null
+};
+
+const assets = [
+    "images/riverland.png",
+    "images/boombastic.jpg",
+    "images/zevra.jpg"
+];
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+}
+
+function formatDate(value) {
+    if (!value) return "Fecha por confirmar";
+    return new Intl.DateTimeFormat("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    }).format(new Date(value));
+}
+
+async function api(path) {
+    const response = await fetch(path);
+    if (!response.ok) {
+        throw new Error(`Error ${response.status}`);
+    }
+    return response.json();
+}
+
+async function loadFestivals() {
+    const grid = document.querySelector("#festivalGrid");
+    grid.innerHTML = '<div class="loading-card">Cargando festivales...</div>';
+
+    try {
+        const response = await api("/api/gateway/events?page=1&limit=20&estado=publicado");
+        const festivals = response.data || [];
+        state.festivals = festivals;
+        if (!festivals.length) {
+            grid.innerHTML = '<div class="empty-state"><strong>No hay festivales publicados</strong><p>Vuelve a intentarlo cuando el gestor publique el siguiente evento.</p></div>';
+            renderGlobe([]);
+            return;
+        }
+
+        grid.innerHTML = festivals.map((festival, index) => `
+            <article class="festival-card" id="festival-${festival.id}">
+                <div class="festival-card__image">
+                    <img src="${escapeHtml(festival.imagenUrl || assets[index % assets.length])}" alt="${escapeHtml(festival.nombre)}">
+                    <span>${escapeHtml(festival.estado || "Publicado")}</span>
+                </div>
+                <div class="festival-card__body">
+                    <p>${formatDate(festival.fechaInicio)} · ${escapeHtml(festival.ubicacion?.ciudad || "Ubicación por confirmar")}</p>
+                    <h3>${escapeHtml(festival.nombre)}</h3>
+                    <p class="festival-card__description">${escapeHtml(festival.descripcion || "")}<br><strong>Artistas:</strong> ${escapeHtml(["Charlotte de Witte · Amelie Lens", "Carl Cox · Nina Kraviz", "Adam Beyer · Boris Brejcha"][index % 3])}</p>
+                    <a class="btn btn--ghost btn--full" href="/festivales.html?id=${encodeURIComponent(festival.id)}">Ver festival</a>
+                </div>
+            </article>
+        `).join("");
+        renderGlobe(festivals);
+    } catch (error) {
+        grid.innerHTML = `
+            <div class="empty-state empty-state--error">
+                <strong>No se pudo conectar con el catálogo</strong>
+                <p>Comprueba que el microservicio de festivales esté iniciado y que el puerto configurado coincida con el gateway.</p>
+                <button class="btn btn--ghost" type="button" id="retryFestivals">Reintentar</button>
+            </div>
+        `;
+        document.querySelector("#retryFestivals").addEventListener("click", loadFestivals);
+    }
+}
+
+async function loadArtists() {
+    const grid = document.querySelector("#artistGrid");
+    try {
+        const artists = await api("/api/gateway/artists");
+        if (!Array.isArray(artists)) {
+            throw new Error("Respuesta de artistas no válida");
+        }
+        if (!artists.length) {
+            grid.innerHTML = `
+                <div class="empty-state empty-state--wide">
+                    <strong>Aún no hay artistas publicados</strong>
+                    <p>El catálogo aparecerá aquí cuando se publiquen artistas.</p>
+                    <a href="/artistas">Ver catálogo de artistas</a>
+                </div>
+            `;
+            return;
+        }
+        grid.innerHTML = artists.map(artist => {
+            const name = artist.nombre || artist.name || "Artista";
+            const image = artist.imagen || artist.imageUrl || artist.image || "images/logoPrincipal.png";
+            const detailUrl = artist.id
+                ? `/artistas/${encodeURIComponent(artist.id)}`
+                : "/artistas";
+            return `
+                <article class="artist-card">
+                    <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}">
+                    <div>
+                        <h3><a href="${escapeHtml(detailUrl)}">${escapeHtml(name)}</a></h3>
+                        <p>Artista del festival</p>
+                    </div>
+                </article>
+            `;
+        }).join("");
+    } catch {
+        grid.innerHTML = `
+            <div class="empty-state empty-state--error empty-state--wide">
+                <strong>No se pudo cargar el catálogo de artistas</strong>
+                <p>Comprueba que el servicio de artistas esté disponible.</p>
+                <button class="btn btn--ghost" type="button" id="retryArtists">Reintentar</button>
+            </div>
+        `;
+        grid.querySelector("#retryArtists").addEventListener("click", loadArtists);
+    }
+}
+
+function renderGlobe(festivals) {
+    const globe = document.querySelector("#festivalGlobe");
+    if (!window.Globe) return;
+
+    const points = festivals
+        .filter(festival => Number.isFinite(Number(festival.ubicacion?.latitud)) && Number.isFinite(Number(festival.ubicacion?.longitud)))
+        .map(festival => ({
+            lat: Number(festival.ubicacion.latitud),
+            lng: Number(festival.ubicacion.longitud),
+            name: festival.nombre,
+            id: festival.id,
+            image: festival.imagenUrl || "images/riverland.png"
+        }));
+
+    const pinElement = point => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "festival-globe-pin";
+        button.title = point.name;
+        button.setAttribute("aria-label", `Ver ${point.name}`);
+        button.innerHTML = `<img src="${escapeHtml(point.image)}" alt=""><span class="festival-globe-pin-line"></span><span class="festival-globe-pin-dot"></span>`;
+        button.addEventListener("pointerdown", event => event.stopPropagation());
+        button.addEventListener("mousedown", event => event.stopPropagation());
+        button.addEventListener("click", () => {
+            location.href = `/festivales.html?id=${encodeURIComponent(point.id)}`;
+        });
+        return button;
+    };
+
+    globe.innerHTML = "";
+    const globeInstance = window.Globe()(globe)
+        .width(Math.max(320, globe.clientWidth || 320))
+        .height(Math.max(360, globe.clientHeight || 360))
+        .backgroundColor("rgba(0,0,0,0)")
+        .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
+        .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
+        .showAtmosphere(true)
+        .atmosphereColor("#55e6ff")
+        .atmosphereAltitude(0.15)
+        .htmlElementsData(points)
+        .htmlLat(point => point.lat)
+        .htmlLng(point => point.lng)
+        .htmlAltitude(() => 0.08)
+        .htmlElement(pinElement);
+
+    const controls = globeInstance.controls();
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.45;
+    controls.enablePan = false;
+    controls.minDistance = 180;
+    controls.maxDistance = 420;
+    globeInstance.pointOfView({ lat: 30, lng: -35, altitude: 2.1 }, 0);
+}
+
+function addToCart(item) {
+    const itemKey = item.productId || item.passId;
+    const existing = state.cart.find(product => (product.productId || product.passId) === itemKey);
+    if (existing) existing.quantity += 1;
+    else state.cart.push(item);
+    persistCart();
+    openModal("cartModal");
+    showToast(`${item.name} añadido al carrito`);
+}
+
+function currentUserId() {
+    if (!state.token) return null;
+    try {
+        const payload = state.token.split(".")[1];
+        if (!payload) return state.token;
+        const normalized = payload.replaceAll("-", "+").replaceAll("_", "/");
+        const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+        return JSON.parse(atob(padded)).sub || state.token;
+    } catch (error) {
+        return state.token;
+    }
+}
+
+function updateAccountLink() {
+    const link = document.querySelector("#accountLink");
+    if (link) link.href = state.token ? "/pedidos.html" : "/login.html";
+}
+
+function persistCart() {
+    localStorage.setItem("subsonic-cart", JSON.stringify(state.cart));
+    renderCart();
+}
+
+function renderCart() {
+    const count = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.querySelector("#cartCount").textContent = count;
+    const items = document.querySelector("#cartItems");
+    if (!state.cart.length) {
+        items.innerHTML = '<div class="empty-state empty-state--wide">Tu carrito está vacío.</div>';
+    } else {
+        items.innerHTML = state.cart.map((item, index) => `
+            <article class="cart-item">
+                <div>
+                    <strong>${escapeHtml(item.name)}</strong>
+                    <span>${escapeHtml(item.eventName || item.tipo || "Subsonic Store")}</span>
+                </div>
+                <div class="cart-item__quantity">
+                    <button type="button" data-cart-action="minus" data-index="${index}" aria-label="Reducir cantidad">−</button>
+                    <span>${item.quantity}</span>
+                    <button type="button" data-cart-action="plus" data-index="${index}" aria-label="Aumentar cantidad">+</button>
+                </div>
+                <strong>${(item.price * item.quantity).toLocaleString("es-ES")} €</strong>
+            </article>
+        `).join("");
+    }
+
+    document.querySelector("#cartTotal").textContent =
+        `${state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString("es-ES")} €`;
+
+    document.querySelectorAll("[data-cart-action]").forEach(button => {
+        button.addEventListener("click", () => {
+            const index = Number(button.dataset.index);
+            if (button.dataset.cartAction === "plus") state.cart[index].quantity += 1;
+            else state.cart[index].quantity -= 1;
+            if (state.cart[index].quantity <= 0) state.cart.splice(index, 1);
+            persistCart();
+        });
+    });
+}
+
+function openModal(id) {
+    const modal = document.querySelector(`#${id}`);
+    modal.classList.add("modal--open");
+    modal.setAttribute("aria-hidden", "false");
+}
+
+function closeModal(id) {
+    const modal = document.querySelector(`#${id}`);
+    modal.classList.remove("modal--open");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+function showToast(message) {
+    const toast = document.querySelector("#toast");
+    toast.textContent = message;
+    toast.classList.add("toast--visible");
+    window.setTimeout(() => toast.classList.remove("toast--visible"), 2600);
+}
+
+async function checkout() {
+    if (!state.cart.length) return showToast("El carrito está vacío");
+    if (!state.token) {
+        closeModal("cartModal");
+        openModal("accountModal");
+        showToast("Inicia sesión para finalizar la compra");
+        return;
+    }
+
+    const unsupported = state.cart.filter(item => !item.productId && item.passId);
+    if (unsupported.length) {
+        closeModal("cartModal");
+        showToast("Los pases del cartel se compran desde la tienda oficial");
+        window.setTimeout(() => location.href = "/tienda.html", 900);
+        return;
+    }
+
+    const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${state.token}`
+    };
+    const userId = currentUserId();
+    if (userId) headers["X-User-Id"] = userId;
+
+    try {
+        const response = await fetch("/api/gateway/orders", {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                lineas: state.cart.map(item => {
+                    const line = {
+                        productoId: item.productId || item.passId,
+                        cantidad: item.quantity
+                    };
+                    if (item.eventId) line.eventoId = item.eventId;
+                    if (item.paseId) line.paseId = item.paseId;
+                    return line;
+                })
+            })
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok) {
+            if (response.status === 401) {
+                state.token = null;
+                localStorage.removeItem("subsonic-token");
+                closeModal("cartModal");
+                openModal("accountModal");
+            }
+            throw new Error(result?.mensaje || result?.message || result?.detail || `Error ${response.status}`);
+        }
+        state.cart = [];
+        persistCart();
+        closeModal("cartModal");
+        showToast(`Pedido ${result?.id || ""} registrado correctamente`);
+    } catch (error) {
+        showToast(error.message || "No se pudo registrar el pedido");
+    }
+}
+
+async function login(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const message = document.querySelector("#loginMessage");
+    message.textContent = "Conectando...";
+
+    try {
+        const response = await fetch("/api/gateway/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                correo: form.email.value,
+                password: form.password.value
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || result.message || "Credenciales incorrectas");
+        state.token = result.accessToken || result.access_token || result.token;
+        localStorage.setItem("subsonic-token", state.token);
+        updateAccountLink();
+        message.textContent = "Sesión iniciada";
+        window.setTimeout(() => closeModal("accountModal"), 500);
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+document.querySelector("#cartButton").addEventListener("click", () => openModal("cartModal"));
+document.querySelector("#checkoutButton").addEventListener("click", checkout);
+document.querySelector("#loginForm").addEventListener("submit", login);
+document.querySelectorAll("[data-close-modal]").forEach(button => {
+    button.addEventListener("click", () => closeModal(button.dataset.closeModal));
+});
+document.querySelector("#togglePassword").addEventListener("click", event => {
+    const password = document.querySelector("#loginPassword");
+    const image = event.currentTarget.querySelector("img");
+    password.type = password.type === "password" ? "text" : "password";
+    image.src = password.type === "password" ? "images/OjoCerrado.png" : "images/OjoAbierto.png";
+});
+
+renderCart();
+updateAccountLink();
+loadFestivals();
+loadArtists();
+
+if (location.hash === "#cart") openModal("cartModal");
+if (location.hash === "#account") openModal("accountModal");

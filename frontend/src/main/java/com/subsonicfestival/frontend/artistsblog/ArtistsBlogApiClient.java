@@ -23,7 +23,7 @@ public class ArtistsBlogApiClient {
 
     public ArtistsBlogApiClient(
             RestClient.Builder builder,
-            @Value("${artists-blog.api.base-url:http://localhost:8000}") String baseUrl) {
+            @Value("${gateway.artists-url}") String baseUrl) {
         this.restClient = builder.baseUrl(baseUrl).build();
     }
 

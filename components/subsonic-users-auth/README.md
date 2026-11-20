@@ -5,7 +5,7 @@ Microservicio FastAPI para autenticacion, autorizacion y gestion de usuarios de 
 ## Arranque local
 
 ```bash
-cd backend/src/subsonic-users-auth
+cd components/subsonic-users-auth
 cp .env.example .env
 docker compose up --build
 ```

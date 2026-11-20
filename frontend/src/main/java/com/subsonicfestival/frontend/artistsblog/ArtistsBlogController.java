@@ -29,7 +29,7 @@ public class ArtistsBlogController {
         this.apiClient = apiClient;
     }
 
-    @GetMapping("/artistas")
+    @GetMapping({"/artistas", "/artistas.html"})
     public String listArtists(
             @RequestParam(name = "q", defaultValue = "") String query,
             Model model) {
@@ -58,7 +58,7 @@ public class ArtistsBlogController {
         return "artists-blog/artist-detail";
     }
 
-    @GetMapping("/blog")
+    @GetMapping({"/blog", "/blog.html"})
     public String listArticles(
             @RequestParam(defaultValue = "0") int skip,
             @RequestParam(defaultValue = DEFAULT_ARTICLES_PER_PAGE + "") int limit,
