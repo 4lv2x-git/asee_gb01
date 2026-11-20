@@ -279,7 +279,7 @@ document.querySelector("#loginForm").addEventListener("submit", async event => {
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.detail || "Credenciales incorrectas");
-        localStorage.setItem("subsonic-token", result.access_token || result.token);
+        localStorage.setItem("subsonic-token", result.accessToken || result.access_token || result.token);
         message.textContent = "Sesión iniciada";
         setTimeout(() => closeModal("accountModal"), 500);
     } catch (error) {

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Historial de pedidos, entradas y solicitudes de cancelación de Subsonic Festival.">
+    <meta name="theme-color" content="#070709">
+    <title>Mis pedidos · Subsonic Festival</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d8ff3e'/%3E%3Ctext x='50' y='73' font-family='Arial Black,Arial,sans-serif' font-size='64' font-weight='900' text-anchor='middle' fill='%23070709'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="site-header">
+        <div class="container header__inner">
+            <a class="logo" href="/" aria-label="Subsonic Festival, volver al inicio">
+                <img class="logo__image" src="images/logoPrincipal.png" alt="">
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a href="/festivales.html">Festivales</a>
+                <a href="/tienda.html">Tienda</a>
+                <a href="/artistas.html">Artistas</a>
+                <a href="/blog.html">Blog</a>
+                <a class="nav-active" href="/pedidos.html">Mis pedidos</a>
+            </nav>
+
+            <div class="header__actions">
+                <button class="cart-button" id="cartButton" type="button" aria-label="Abrir carrito">
+                    <span>Carrito</span>
+                    <strong id="cartCount">0</strong>
+                </button>
+                <a class="icon-button" href="/login.html" data-account-link aria-label="Cuenta">
+                    <img src="images/User.png" alt="">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main id="contenido">
+        <section class="section orders-page">
+            <div class="container">
+                <div class="section-head orders-page__head">
+                    <div>
+                        <p class="eyebrow"><span class="eyebrow__dot"></span> Tu cuenta</p>
+                        <h1>Tus pedidos.<br><span class="text-lime">Tus entradas.</span></h1>
+                    </div>
+                    <div class="orders-page__intro">
+                        <p>
+                            Consulta el historial de compras registrado por el gestor de inventario, revisa el estado
+                            de tus entradas y solicita cancelaciones cuando estén disponibles.
+                        </p>
+                        <div class="orders-page__actions">
+                            <a class="btn btn--ghost btn--small" href="/tienda.html">Seguir comprando</a>
+                            <button class="btn btn--ghost btn--small" type="button" id="logoutButton">Cerrar sesión</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="store-stats orders-stats" aria-label="Resumen de pedidos">
+                    <article>
+                        <strong id="statOrders">—</strong>
+                        <span>pedidos registrados</span>
+                    </article>
+                    <article>
+                        <strong id="statSpent">—</strong>
+                        <span>importe total</span>
+                    </article>
+                    <article>
+                        <strong id="statEntries">—</strong>
+                        <span>entradas y pases</span>
+                    </article>
+                </div>
+
+                <div class="orders-toolbar">
+                    <div class="store-categories" id="orderFilters" role="group" aria-label="Filtrar pedidos por estado">
+                        <button class="active" type="button" data-order-filter="todos">Todos</button>
+                        <button type="button" data-order-filter="COMPLETADO">Completados</button>
+                        <button type="button" data-order-filter="CANCELACION_SOLICITADA">Cancelación solicitada</button>
+                        <button type="button" data-order-filter="CANCELADO">Cancelados</button>
+                    </div>
+                    <button class="btn btn--ghost btn--small" type="button" id="refreshOrders">Actualizar</button>
+                </div>
+
+                <div class="orders-grid" id="ordersGrid" aria-live="polite">
+                    <div class="loading-card loading-card--wide">Cargando pedidos...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Detalle del pedido -->
+    <div class="modal" id="orderModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+        <div class="modal__backdrop" data-close-modal="orderModal"></div>
+        <div class="modal__panel modal__panel--medium">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Detalle del pedido</p>
+                    <h2 id="orderModalTitle">Pedido</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="orderModal" aria-label="Cerrar">×</button>
+            </header>
+            <div id="orderDetail" class="order-detail"></div>
+        </div>
+    </div>
+
+    <!-- Inicio de sesión -->
+    <div class="modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+        <div class="modal__backdrop" data-close-modal="loginModal"></div>
+        <div class="modal__panel modal__panel--small">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Subsonic</p>
+                    <h2 id="loginTitle">Iniciar sesión</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="loginModal" aria-label="Cerrar">×</button>
+            </header>
+            <form id="loginForm" class="account-form">
+                <label for="loginEmail">Correo electrónico</label>
+                <input id="loginEmail" name="email" type="email" required autocomplete="email" placeholder="tu@email.com">
+                <label for="loginPassword">Contraseña</label>
+                <div class="password-field">
+                    <input id="loginPassword" name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña">
+                    <button type="button" id="togglePassword" aria-label="Mostrar contraseña">
+                        <img src="images/OjoCerrado.png" alt="">
+                    </button>
+                </div>
+                <button class="btn btn--primary btn--full" type="submit">Entrar</button>
+                <p id="loginMessage" class="form-message" aria-live="polite"></p>
+                <p class="auth-switch">¿No tienes cuenta? <a href="/register.html">Regístrate</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/commerce.js"></script>
+    <script src="js/pedidos.js"></script>
+</body>
+</html>

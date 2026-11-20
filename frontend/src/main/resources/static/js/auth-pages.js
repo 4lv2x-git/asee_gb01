@@ -23,8 +23,8 @@ if (loginForm) {
                 })
             });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.detail || "No se pudo iniciar sesión");
-            localStorage.setItem("subsonic-token", result.access_token);
+            if (!response.ok) throw new Error(result.mensaje || result.message || result.detail || "No se pudo iniciar sesión");
+            localStorage.setItem("subsonic-token", result.accessToken || result.access_token);
             message.textContent = "Sesión iniciada";
             setTimeout(() => location.href = "/", 500);
         } catch (error) {

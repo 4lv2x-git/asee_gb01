@@ -1,8 +1,10 @@
+const storedToken = localStorage.getItem("subsonic-token");
+
 const state = {
     festivals: [],
     selectedFestival: null,
     cart: JSON.parse(localStorage.getItem("subsonic-cart") || "[]"),
-    token: localStorage.getItem("subsonic-token")
+    token: storedToken && storedToken !== "undefined" && storedToken !== "null" ? storedToken : null
 };
 
 const assets = [
@@ -186,12 +188,31 @@ function renderGlobe(festivals) {
 }
 
 function addToCart(item) {
-    const existing = state.cart.find(product => product.passId === item.passId);
+    const itemKey = item.productId || item.passId;
+    const existing = state.cart.find(product => (product.productId || product.passId) === itemKey);
     if (existing) existing.quantity += 1;
     else state.cart.push(item);
     persistCart();
     openModal("cartModal");
     showToast(`${item.name} añadido al carrito`);
+}
+
+function currentUserId() {
+    if (!state.token) return null;
+    try {
+        const payload = state.token.split(".")[1];
+        if (!payload) return state.token;
+        const normalized = payload.replaceAll("-", "+").replaceAll("_", "/");
+        const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+        return JSON.parse(atob(padded)).sub || state.token;
+    } catch (error) {
+        return state.token;
+    }
+}
+
+function updateAccountLink() {
+    const link = document.querySelector("#accountLink");
+    if (link) link.href = state.token ? "/pedidos.html" : "/login.html";
 }
 
 function persistCart() {
@@ -210,7 +231,7 @@ function renderCart() {
             <article class="cart-item">
                 <div>
                     <strong>${escapeHtml(item.name)}</strong>
-                    <span>${escapeHtml(item.eventName)}</span>
+                    <span>${escapeHtml(item.eventName || item.tipo || "Subsonic Store")}</span>
                 </div>
                 <div class="cart-item__quantity">
                     <button type="button" data-cart-action="minus" data-index="${index}" aria-label="Reducir cantidad">−</button>
@@ -264,29 +285,53 @@ async function checkout() {
         return;
     }
 
+    const unsupported = state.cart.filter(item => !item.productId && item.passId);
+    if (unsupported.length) {
+        closeModal("cartModal");
+        showToast("Los pases del cartel se compran desde la tienda oficial");
+        window.setTimeout(() => location.href = "/tienda.html", 900);
+        return;
+    }
+
+    const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${state.token}`
+    };
+    const userId = currentUserId();
+    if (userId) headers["X-User-Id"] = userId;
+
     try {
         const response = await fetch("/api/gateway/orders", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${state.token}`
-            },
+            headers,
             body: JSON.stringify({
-                lineas: state.cart.map(item => ({
-                    productoId: item.passId,
-                    cantidad: item.quantity,
-                    eventoId: item.eventId,
-                    paseId: item.passId
-                }))
+                lineas: state.cart.map(item => {
+                    const line = {
+                        productoId: item.productId || item.passId,
+                        cantidad: item.quantity
+                    };
+                    if (item.eventId) line.eventoId = item.eventId;
+                    if (item.paseId) line.paseId = item.paseId;
+                    return line;
+                })
             })
         });
-        if (!response.ok) throw new Error(`Error ${response.status}`);
+        const result = await response.json().catch(() => null);
+        if (!response.ok) {
+            if (response.status === 401) {
+                state.token = null;
+                localStorage.removeItem("subsonic-token");
+                closeModal("cartModal");
+                openModal("accountModal");
+            }
+            throw new Error(result?.mensaje || result?.message || result?.detail || `Error ${response.status}`);
+        }
         state.cart = [];
         persistCart();
         closeModal("cartModal");
-        showToast("Compra registrada correctamente");
+        showToast(`Pedido ${result?.id || ""} registrado correctamente`);
     } catch (error) {
-        showToast("No se pudo registrar el pedido");
+        showToast(error.message || "No se pudo registrar el pedido");
     }
 }
 
@@ -307,8 +352,9 @@ async function login(event) {
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.detail || result.message || "Credenciales incorrectas");
-        state.token = result.access_token || result.token;
+        state.token = result.accessToken || result.access_token || result.token;
         localStorage.setItem("subsonic-token", state.token);
+        updateAccountLink();
         message.textContent = "Sesión iniciada";
         window.setTimeout(() => closeModal("accountModal"), 500);
     } catch (error) {
@@ -330,6 +376,7 @@ document.querySelector("#togglePassword").addEventListener("click", event => {
 });
 
 renderCart();
+updateAccountLink();
 loadFestivals();
 loadArtists();
 

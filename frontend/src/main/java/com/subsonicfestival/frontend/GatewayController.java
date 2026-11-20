@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -83,27 +86,88 @@ public class GatewayController {
         return proxy(authUrl + "/v1/auth/register", HttpMethod.POST, body, null);
     }
 
+    @GetMapping("/products")
+    public ResponseEntity<?> products(@RequestParam Map<String, String> parameters) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(inventoryUrl + "/inventario/productos");
+        parameters.forEach(builder::queryParam);
+        return proxy(builder.build().encode().toUriString(), HttpMethod.GET, null, null);
+    }
+
+    @GetMapping("/products/{id}")
+    public ResponseEntity<?> product(@PathVariable("id") String id) {
+        return proxy(inventoryUrl + "/inventario/productos/" + id, HttpMethod.GET, null, null);
+    }
+
     @GetMapping("/orders")
-    public ResponseEntity<?> orders(@RequestHeader(value = "Authorization", required = false) String authorization) {
-        return proxy(inventoryUrl + "/pedidos", HttpMethod.GET, null, authorization);
+    public ResponseEntity<?> orders(@RequestHeader(value = "Authorization", required = false) String authorization,
+                                    @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return proxy(inventoryUrl + "/pedidos", HttpMethod.GET, null, authorization, userId);
     }
 
     @PostMapping("/orders")
     public ResponseEntity<?> createOrder(@RequestBody Object body,
-                                         @RequestHeader(value = "Authorization", required = false) String authorization) {
-        return proxy(inventoryUrl + "/pedidos", HttpMethod.POST, body, authorization);
+                                         @RequestHeader(value = "Authorization", required = false) String authorization,
+                                         @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return proxy(inventoryUrl + "/pedidos", HttpMethod.POST, body, authorization, userId);
+    }
+
+    @GetMapping("/orders/{id}")
+    public ResponseEntity<?> order(@PathVariable("id") String id,
+                                   @RequestHeader(value = "Authorization", required = false) String authorization,
+                                   @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return proxy(inventoryUrl + "/pedidos/" + id, HttpMethod.GET, null, authorization, userId);
+    }
+
+    @PostMapping("/orders/{id}/cancel")
+    public ResponseEntity<?> cancelOrder(@PathVariable("id") String id,
+                                         @RequestHeader(value = "Authorization", required = false) String authorization,
+                                         @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return proxy(inventoryUrl + "/pedidos/" + id + "/cancelacion", HttpMethod.POST, null, authorization, userId);
+    }
+
+    @GetMapping("/entries/{id}")
+    public ResponseEntity<?> entry(@PathVariable("id") String id,
+                                   @RequestHeader(value = "Authorization", required = false) String authorization,
+                                   @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return proxy(inventoryUrl + "/entradas/" + id, HttpMethod.GET, null, authorization, userId);
+    }
+
+    @PostMapping("/entries/{id}/cancel")
+    public ResponseEntity<?> cancelEntry(@PathVariable("id") String id,
+                                         @RequestHeader(value = "Authorization", required = false) String authorization,
+                                         @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return proxy(inventoryUrl + "/entradas/" + id + "/cancelacion", HttpMethod.POST, null, authorization, userId);
     }
 
     private ResponseEntity<?> proxy(String url, HttpMethod method, Object body, String authorization) {
+        return proxy(url, method, body, authorization, null);
+    }
+
+    private ResponseEntity<?> proxy(String url, HttpMethod method, Object body, String authorization, String userId) {
         try {
             HttpHeaders headers = new HttpHeaders();
             if (authorization != null) {
                 headers.set("Authorization", authorization);
             }
+            if (userId != null && !userId.isBlank()) {
+                headers.set("X-User-Id", userId.trim());
+            }
             HttpEntity<?> entity = body == null ? new HttpEntity<>(headers) : new HttpEntity<>(body, headers);
             return restTemplate.exchange(url, method, entity, Object.class);
+        } catch (HttpStatusCodeException exception) {
+            String responseBody = exception.getResponseBodyAsString();
+            if (responseBody == null || responseBody.isBlank()) {
+                return ResponseEntity.status(exception.getStatusCode()).body(Map.of(
+                        "error", "UPSTREAM_ERROR",
+                        "message", "El microservicio respondio con un error",
+                        "url", url
+                ));
+            }
+            return ResponseEntity.status(exception.getStatusCode())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(responseBody);
         } catch (RestClientException exception) {
-            return ResponseEntity.status(503).body(Map.of(
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
                     "error", "SERVICE_UNAVAILABLE",
                     "message", "El microservicio no esta disponible",
                     "url", url
