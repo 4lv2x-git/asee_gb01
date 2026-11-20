@@ -42,16 +42,16 @@ docker compose down
 
 ## Inicialización de artistas de demostración
 
-El proyecto anterior incluye imágenes de seis artistas, pero no exporta sus
-fichas de Firebase. Al arrancar el backend, si la colección `artistas` está
-vacía, carga seis registros identificados como demostración. La conexión usa
+Al arrancar el backend, si la colección `artistas` está vacía, carga seis
+registros de demostración con sus nombres e imágenes. La conexión usa
 `MONGODB_URL` y `MONGODB_DATABASE` configurados para el backend. En el entorno
 del equipo, usa la URI y la base de datos asignadas; no sustituyas esos valores
 por `localhost`. Si ya hay artistas, no añade ni modifica ningún registro.
 
-La biografía indica cuándo no hay datos y las canciones, redes sociales y eventos
-se dejan vacíos si no están en el proyecto anterior. Las imágenes se sirven desde
-el frontend.
+Las biografías se dejan vacías hasta que se publiquen fichas reales; las
+canciones, las redes sociales y los eventos también se dejan vacíos. Las
+imágenes se sirven desde el frontend. Al arrancar se elimina además el texto de
+biografía obsoleto de las fichas de demostración que ya estuvieran guardadas.
 
 ## Pruebas
 

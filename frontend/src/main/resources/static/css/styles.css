@@ -313,6 +313,16 @@ section[id] {
     transform: scaleX(1);
 }
 
+.site-nav a.nav-active,
+.site-nav a.is-active {
+    color: var(--lime);
+}
+
+.site-nav a.nav-active::after,
+.site-nav a.is-active::after {
+    transform: scaleX(1);
+}
+
 /* Acceso con sesión iniciada (portada) ------------------------------------ */
 
 .site-nav a.nav-user {
@@ -1820,7 +1830,6 @@ section[id] {
 
 .auth-page {
     min-height: 100vh;
-    overflow: hidden;
     background:
         radial-gradient(circle at 20% 55%, rgba(55, 110, 255, 0.32), transparent 22%),
         radial-gradient(circle at 75% 35%, rgba(83, 166, 255, 0.22), transparent 25%),
