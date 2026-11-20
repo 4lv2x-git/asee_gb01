@@ -42,7 +42,8 @@ microservicio Artists & Blog mediante `GATEWAY_ARTISTS_URL` (por defecto
 artistas para la portada. Las rutas completas son `/artistas`,
 `/artistas/{id}`, `/blog` y `/blog/{id}`. El listado permite filtrar por nombre;
 las fichas muestran biografía, redes, eventos y canciones. El blog ofrece
-listado paginado y artículos completos.
+listado paginado y artículos completos. Sin registros, ambas vistas muestran
+un estado vacío; el blog seguirá así hasta que se carguen artículos.
 
 ## Ejecutar con Spring Boot
 
@@ -69,6 +70,10 @@ mvn spring-boot:run
 
 La portada consulta `/api/gateway/artists`; las vistas Thymeleaf consultan el
 mismo servicio usando `GATEWAY_ARTISTS_URL`.
+
+Para cargar las fichas de artistas de demostración, inicia el microservicio
+Artists & Blog y sigue el comando de carga descrito en
+[`components/service-artists-blog/README.md`](../components/service-artists-blog/README.md).
 
 ## Pruebas
 

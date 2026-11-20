@@ -40,6 +40,21 @@ datos:
 docker compose down
 ```
 
+## Fichas de demostración
+
+El proyecto anterior incluye imágenes de seis artistas, pero no exporta sus
+fichas de Firebase. Para poder revisar el catálogo y las fichas mientras llegan
+los datos reales, puedes cargar registros identificados como demostración:
+
+```text
+docker compose exec api python -m src.seed_demo_artists
+```
+
+El comando inserta o actualiza únicamente IDs `demo-*`; se puede ejecutar más
+de una vez. Las biografías son avisos pendientes de sustituir y las canciones
+son ficticias, se muestran etiquetadas como `[DEMO]`. No contiene enlaces
+sociales ni eventos inventados. Las imágenes se sirven desde el frontend.
+
 ## Pruebas
 
 Desde esta carpeta, instala las dependencias y ejecuta:
