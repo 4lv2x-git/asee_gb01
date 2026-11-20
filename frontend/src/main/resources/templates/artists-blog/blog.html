@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Noticias e historias de Subsonic Festival.">
+    <title>Blog · Subsonic Festival 2027</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/artists-blog.css}">
+</head>
+<body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<header th:replace="~{fragments/navigation :: siteHeader}"></header>
+<main id="contenido" class="catalog-page">
+    <section class="container page-intro">
+        <p class="eyebrow"><span class="eyebrow__dot"></span> Desde el festival</p>
+        <h1>Historias en <span class="text-lime">frecuencia.</span></h1>
+        <p>Noticias, novedades y todo lo que ocurre alrededor de Subsonic Festival.</p>
+    </section>
+
+    <section class="container catalog-content" aria-labelledby="articles-heading">
+        <h2 id="articles-heading" class="sr-only">Artículos del blog</h2>
+        <div class="catalog-grid article-grid" th:if="${!#lists.isEmpty(articles)}">
+            <article class="catalog-card article-card" th:each="article : ${articles}">
+                <a class="catalog-card__image" th:href="@{/blog/{id}(id=${article.id})}">
+                    <img th:if="${!#strings.isEmpty(article.imagen)}" th:src="${article.imagen}"
+                         th:alt="${'Imagen de ' + article.titulo}" loading="lazy">
+                    <span class="catalog-card__placeholder" th:if="${#strings.isEmpty(article.imagen)}"
+                          aria-hidden="true">S</span>
+                </a>
+                <div class="catalog-card__body">
+                    <p class="article-meta">
+                        <span th:text="${article.autor}">Equipo Subsonic</span>
+                        <time th:if="${!#strings.isEmpty(article.fechaPublicacion)}"
+                              th:datetime="${article.fechaPublicacion}"
+                              th:text="${#strings.substring(article.fechaPublicacion, 0, 10)}">Fecha</time>
+                    </p>
+                    <h2><a th:href="@{/blog/{id}(id=${article.id})}" th:text="${article.titulo}">Título</a></h2>
+                    <p class="article-excerpt" th:text="${article.resumen}">Resumen</p>
+                    <a class="text-link" th:href="@{/blog/{id}(id=${article.id})}">
+                        Leer artículo <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </article>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(articles)}">
+            <h2>Aún no hay artículos publicados</h2>
+            <p>Vuelve pronto para descubrir las novedades del festival.</p>
+        </div>
+        <nav class="pagination" aria-label="Paginación del blog">
+            <a class="btn btn--ghost" th:if="${hasPrevious}"
+               th:href="@{/blog(skip=${previousSkip},limit=${limit})}">← Más recientes</a>
+            <span th:if="${!#lists.isEmpty(articles)}"
+                  th:text="${'Artículos ' + (skip + 1) + '–' + (skip + #lists.size(articles))}">Artículos</span>
+            <span th:if="${#lists.isEmpty(articles)}">Sin artículos en esta página</span>
+            <a class="btn btn--ghost" th:if="${hasNext}"
+               th:href="@{/blog(skip=${nextSkip},limit=${limit})}">Más antiguos →</a>
+        </nav>
+    </section>
+</main>
+<footer th:replace="~{fragments/navigation :: siteFooter}"></footer>
+</body>
+</html>

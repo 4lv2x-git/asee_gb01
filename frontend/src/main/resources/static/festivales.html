@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festivales · Subsonic Festival</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header__inner">
+            <a class="logo" href="/" aria-label="Subsonic Festival">
+                <img class="logo__image" src="images/logoPrincipal.png" alt="">
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a class="nav-active" href="/festivales.html">Festivales</a>
+                <a href="/tienda.html">Tienda</a>
+                <a href="/artistas">Artistas</a>
+                <a href="/blog">Blog</a>
+                <a href="/recintos.html">Recintos</a>
+                <a href="/pedidos.html">Mis pedidos</a>
+                <a href="/cuenta" data-auth-link>Acceso</a>
+            </nav>
+            <div class="header__actions">
+                <button class="cart-button" id="cartButton" type="button" aria-label="Abrir carrito"><span>Carrito</span><strong id="cartCount">0</strong></button>
+                <a class="icon-button" id="accountLink" href="/cuenta" aria-label="Abrir cuenta"><img src="images/User.png" alt=""></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section festival-page">
+            <div class="container">
+                <div class="section-head festival-page__head">
+                    <div>
+                        <p class="eyebrow">Cartel y destinos</p>
+                        <h1>Todos los<br><span class="text-lime">festivales.</span></h1>
+                    </div>
+                    <form class="festival-search" id="festivalSearch">
+                        <label class="sr-only" for="festivalQuery">Buscar por nombre</label>
+                        <input id="festivalQuery" type="search" placeholder="Nombre del festival">
+                        <label class="sr-only" for="cityQuery">Filtrar por ciudad</label>
+                        <input id="cityQuery" type="search" placeholder="Ciudad">
+                        <label class="sr-only" for="dateStart">Desde</label>
+                        <input id="dateStart" type="date" title="Fecha desde">
+                        <label class="sr-only" for="dateEnd">Hasta</label>
+                        <input id="dateEnd" type="date" title="Fecha hasta">
+                        <button class="btn btn--primary" type="submit">Buscar</button>
+                    </form>
+                </div>
+                <div class="lineup-grid" id="festivalGrid" aria-live="polite">
+                    <div class="loading-card">Cargando festivales...</div>
+                </div>
+
+                <article class="festival-detail" id="festivalDetail" hidden>
+                    <div class="festival-detail__hero" id="festivalDetailHero"></div>
+                    <div class="festival-detail__content">
+                        <div>
+                            <p class="eyebrow" id="festivalLocation"></p>
+                            <h2 id="festivalTitle"></h2>
+                            <p id="festivalDescription"></p>
+                            <div class="festival-meta" id="festivalMeta"></div>
+
+            <div class="festival-grounds-cta">
+                <div>
+                    <p class="eyebrow">Recintos y espacios</p>
+                    <strong>Reserva tu espacio en este festival</strong>
+                    <p>Food trucks, barras, merchandising y zonas de servicio dentro del recinto.</p>
+                </div>
+                <a class="btn btn--ghost" id="festivalGroundsLink" href="/recintos.html">Ver recintos</a>
+            </div>
+                        </div>
+                        <div class="ticket-grid" id="festivalPasses"></div>
+                        <div class="lineup-section" id="festivalLineup"></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="cartModal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal__backdrop" data-close-cart></div>
+        <div class="modal__panel">
+            <header class="modal__header"><div><p class="eyebrow">Tu selección</p><h2>Carrito</h2></div><button class="modal__close" type="button" data-close-cart aria-label="Cerrar">×</button></header>
+            <div id="cartItems" class="cart-items"></div>
+            <div class="cart-summary"><span>Total</span><strong id="cartTotal">0 €</strong></div>
+            <button class="btn btn--primary btn--full" id="checkoutButton" type="button">Finalizar compra</button>
+        </div>
+    </div>
+
+    <div class="modal" id="accountModal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal__backdrop" data-close-account></div>
+        <div class="modal__panel modal__panel--small">
+            <header class="modal__header"><div><p class="eyebrow">Subsonic</p><h2>Iniciar sesión</h2></div><button class="modal__close" type="button" data-close-account aria-label="Cerrar">×</button></header>
+            <form id="loginForm" class="account-form">
+                <label for="loginEmail">Correo electrónico</label><input id="loginEmail" name="email" type="email" required>
+                <label for="loginPassword">Contraseña</label><input id="loginPassword" name="password" type="password" required>
+                <button class="btn btn--primary btn--full" type="submit">Entrar</button><p id="loginMessage" class="form-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="js/site.js" defer></script>
+    <script src="js/festivales.js"></script>
+</body>
+</html>

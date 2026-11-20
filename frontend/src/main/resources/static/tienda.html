@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tienda oficial de Subsonic Festival: entradas, pases y merchandising conectados al gestor de inventario.">
+    <meta name="theme-color" content="#070709">
+    <title>Tienda · Subsonic Festival</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23d8ff3e'/%3E%3Ctext x='50' y='73' font-family='Arial Black,Arial,sans-serif' font-size='64' font-weight='900' text-anchor='middle' fill='%23070709'%3ES%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="site-header">
+        <div class="container header__inner">
+            <a class="logo" href="/" aria-label="Subsonic Festival, volver al inicio">
+                <img class="logo__image" src="images/logoPrincipal.png" alt="">
+                <span class="logo__text">Subsonic<span>Festival 2027</span></span>
+            </a>
+
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a href="/festivales.html">Festivales</a>
+                <a class="nav-active" href="/tienda.html">Tienda</a>
+                <a href="/artistas">Artistas</a>
+                <a href="/blog">Blog</a>
+                <a href="/recintos.html">Recintos</a>
+                <a href="/pedidos.html">Mis pedidos</a>
+                <a href="/cuenta" data-auth-link>Acceso</a>
+            </nav>
+
+            <div class="header__actions">
+                <button class="cart-button" id="cartButton" type="button" aria-label="Abrir carrito">
+                    <span>Carrito</span>
+                    <strong id="cartCount">0</strong>
+                </button>
+                <a class="icon-button" href="/cuenta" data-account-link aria-label="Cuenta">
+                    <img src="images/User.png" alt="">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main id="contenido">
+        <section class="section store-page">
+            <div class="container">
+                <div class="store-hero">
+                    <p class="eyebrow"><span class="eyebrow__dot"></span> Subsonic Store</p>
+                    <h1>Entradas, pases<br><span class="text-lime">y merchandising.</span></h1>
+                    <p class="store-hero__lead">
+                        Todo el catálogo oficial del festival, conectado en tiempo real con el gestor de inventario.
+                        Consulta disponibilidad, añade productos al carrito y formaliza tu pedido con tu cuenta.
+                    </p>
+                </div>
+
+                <div class="store-stats" aria-label="Resumen del catálogo">
+                    <article>
+                        <strong id="statProducts">—</strong>
+                        <span>productos en catálogo</span>
+                    </article>
+                    <article>
+                        <strong id="statStock">—</strong>
+                        <span>unidades disponibles</span>
+                    </article>
+                    <article>
+                        <strong id="statTypes">—</strong>
+                        <span>tipos de producto</span>
+                    </article>
+                </div>
+
+                <div class="store-toolbar">
+                    <div class="store-search">
+                        <label class="sr-only" for="storeQuery">Buscar productos</label>
+                        <input id="storeQuery" type="search" placeholder="Buscar por nombre o descripción..." autocomplete="off">
+                    </div>
+
+                    <div class="store-toolbar__row">
+                        <div class="store-categories" id="storeCategories" role="group" aria-label="Filtrar por tipo de producto">
+                            <button class="active" type="button" data-category="todos">Todos</button>
+                            <button type="button" data-category="entrada">Entradas</button>
+                            <button type="button" data-category="pase">Pases</button>
+                            <button type="button" data-category="merchandising">Merchandising</button>
+                        </div>
+
+                        <label class="store-sort" for="storeSort">
+                            Ordenar
+                            <select id="storeSort">
+                                <option value="relevancia">Relevancia</option>
+                                <option value="precio-asc">Precio: menor a mayor</option>
+                                <option value="precio-desc">Precio: mayor a menor</option>
+                                <option value="nombre">Nombre A–Z</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <p class="store-results" id="storeCount" aria-live="polite">Cargando catálogo...</p>
+                </div>
+
+                <div class="product-grid" id="productGrid" aria-live="polite">
+                    <div class="loading-card loading-card--wide">Cargando catálogo...</div>
+                </div>
+
+                <p class="store-note">
+                    Los precios y el stock se consultan directamente al gestor de inventario. El pedido se valida y
+                    el stock se descuenta de forma atómica al finalizar la compra.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Detalle de producto -->
+    <div class="modal" id="productModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+        <div class="modal__backdrop" data-close-modal="productModal"></div>
+        <div class="modal__panel modal__panel--medium">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Detalle del producto</p>
+                    <h2 id="productModalTitle">Producto</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="productModal" aria-label="Cerrar">×</button>
+            </header>
+            <div id="productDetail" class="product-detail"></div>
+        </div>
+    </div>
+
+    <!-- Carrito -->
+    <div class="modal" id="cartModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+        <div class="modal__backdrop" data-close-modal="cartModal"></div>
+        <div class="modal__panel">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Tu selección</p>
+                    <h2 id="cartTitle">Carrito</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="cartModal" aria-label="Cerrar">×</button>
+            </header>
+
+            <div id="cartItems" class="cart-items"></div>
+
+            <div id="cartSummary">
+                <div class="cart-summary">
+                    <span>Total</span>
+                    <strong id="cartTotal">0 €</strong>
+                </div>
+                <p id="cartMessage" class="form-message" aria-live="polite"></p>
+                <button class="btn btn--primary btn--full" id="checkoutButton" type="button">Finalizar compra</button>
+            </div>
+
+            <div id="orderSuccess" class="order-success" hidden></div>
+        </div>
+    </div>
+
+    <!-- Inicio de sesión -->
+    <div class="modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+        <div class="modal__backdrop" data-close-modal="loginModal"></div>
+        <div class="modal__panel modal__panel--small">
+            <header class="modal__header">
+                <div>
+                    <p class="eyebrow">Subsonic</p>
+                    <h2 id="loginTitle">Iniciar sesión</h2>
+                </div>
+                <button class="modal__close" type="button" data-close-modal="loginModal" aria-label="Cerrar">×</button>
+            </header>
+            <form id="loginForm" class="account-form">
+                <label for="loginEmail">Correo electrónico</label>
+                <input id="loginEmail" name="email" type="email" required autocomplete="email" placeholder="tu@email.com">
+                <label for="loginPassword">Contraseña</label>
+                <div class="password-field">
+                    <input id="loginPassword" name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña">
+                    <button type="button" id="togglePassword" aria-label="Mostrar contraseña">
+                        <img src="images/OjoCerrado.png" alt="">
+                    </button>
+                </div>
+                <button class="btn btn--primary btn--full" type="submit">Entrar</button>
+                <p id="loginMessage" class="form-message" aria-live="polite"></p>
+                <p class="auth-switch">¿No tienes cuenta? <a href="/login?vista=registro">Regístrate</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/site.js" defer></script>
+    <script src="js/commerce.js"></script>
+    <script src="js/tienda.js"></script>
+</body>
+</html>

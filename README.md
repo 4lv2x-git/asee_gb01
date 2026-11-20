@@ -1,4 +1,14 @@
 # asee_gb01
+
+## Componentes
+
+- [Artists & Blog](backend/components/service-artists-blog/README.md): microservicio
+  Python/FastAPI con MongoDB, contratos OpenAPI y pruebas.
+- [Festivals Service](backend/components/service-festivals/README.md): microservicio
+  Python/FastAPI con PostgreSQL.
+- [Frontend](frontend/README.md): página principal, acceso y perfil de usuario y
+  panel de administración servidos con Spring Boot.
+
 **Miembros del grupo:**
 - Jaime Arias Rodríguez
 - Manuel Carvajal Tarifa
