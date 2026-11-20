@@ -179,7 +179,7 @@
 
     function updateAccountLink() {
         document.querySelectorAll("[data-account-link]").forEach(element => {
-            element.href = getToken() ? "/pedidos.html" : "/login.html";
+            element.href = getToken() ? "/pedidos.html" : "/cuenta";
             element.title = getToken() ? "Mis pedidos" : "Iniciar sesión";
         });
     }

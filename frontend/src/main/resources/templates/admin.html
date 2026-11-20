@@ -16,7 +16,8 @@
                 <h1>Panel de control</h1>
                 <p>
                     Modera las cuentas del festival, revisa su estado y da soporte a clientes y
-                    proveedores. El resto de módulos se incorporará en futuras entregas.
+                    proveedores. Desde la barra lateral puedes consultar además los festivales y el
+                    inventario del merchandising.
                 </p>
             </div>
             <div class="page-head__actions">
@@ -48,28 +49,7 @@
         </section>
 
         <div class="admin-layout">
-            <aside class="panel admin-sidebar" aria-label="Módulos del panel">
-                <p class="admin-sidebar__title">Módulos</p>
-                <nav aria-label="Secciones disponibles">
-                    <a class="sidebar-link is-active" th:href="@{/admin}" aria-current="page">
-                        Usuarios
-                        <span class="badge" th:text="${total}">0</span>
-                    </a>
-                    <span class="sidebar-link is-disabled" aria-disabled="true">
-                        Eventos <small>Próximamente</small>
-                    </span>
-                    <span class="sidebar-link is-disabled" aria-disabled="true">
-                        Inventario <small>Próximamente</small>
-                    </span>
-                    <span class="sidebar-link is-disabled" aria-disabled="true">
-                        Artistas <small>Próximamente</small>
-                    </span>
-                </nav>
-                <p class="sidebar-note">
-                    Esta entrega incluye únicamente la gestión de usuarios. Los módulos de eventos,
-                    inventario y artistas se conectarán más adelante.
-                </p>
-            </aside>
+            <aside th:replace="~{fragments/comun :: adminModulos('usuarios', ${total}, null, null)}"></aside>
 
             <section class="panel admin-users" id="usuarios" aria-labelledby="users-title">
                 <header class="panel-head">

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/comun :: head('Inventario · Panel de administración · Subsonic Festival 2027', 'Catálogo y stock de entradas, pases y merchandising en el panel de administración de Subsonic Festival 2027.')}"></head>
+<body>
+<a class="skip-link" href="#admin-main">Saltar al contenido</a>
+
+<header th:replace="~{fragments/comun :: cabeceraCuenta('admin')}"></header>
+
+<main class="app-main" id="admin-main">
+    <div class="container">
+        <div th:replace="~{fragments/comun :: alertas}"></div>
+
+        <header class="page-head">
+            <div>
+                <p class="eyebrow"><span class="eyebrow__dot"></span> Administración</p>
+                <h1>Inventario y merchandising</h1>
+                <p>
+                    Supervisa el catálogo del gestor de inventario: entradas, pases y productos de
+                    merchandising. Controla las unidades disponibles y detecta el stock bajo o agotado.
+                </p>
+            </div>
+            <div class="page-head__actions">
+                <a class="btn btn--ghost btn--small" th:href="@{/admin/inventario}">Actualizar</a>
+            </div>
+        </header>
+
+        <section class="stat-grid" aria-label="Resumen de inventario">
+            <article class="stat-card stat-card--lime">
+                <span class="stat-card__label">Productos</span>
+                <strong th:text="${totalProductos}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Unidades en stock</span>
+                <strong th:text="${#numbers.formatInteger(unidadesStock, 0, 'POINT')}">0</strong>
+            </article>
+            <article class="stat-card stat-card--cyan">
+                <span class="stat-card__label">Valor del stock</span>
+                <strong th:text="${@textos.moneda(valorInventario)}">0 €</strong>
+            </article>
+            <article class="stat-card stat-card--muted">
+                <span class="stat-card__label">Stock bajo</span>
+                <strong th:text="${stockBajo}">0</strong>
+            </article>
+            <article class="stat-card stat-card--pink">
+                <span class="stat-card__label">Agotados</span>
+                <strong th:text="${agotados}">0</strong>
+            </article>
+        </section>
+
+        <div class="admin-layout">
+            <aside th:replace="~{fragments/comun :: adminModulos('inventario', null, null, ${totalProductos})}"></aside>
+
+            <section class="panel admin-users" id="inventario" aria-labelledby="inventory-title">
+                <header class="panel-head">
+                    <h2 id="inventory-title">Catálogo y stock</h2>
+                    <p>
+                        Vista de solo lectura del inventario. Las altas y los ajustes de stock se
+                        realizan en el gestor de inventario; aquí puedes revisar la disponibilidad.
+                    </p>
+                </header>
+
+                <form class="table-toolbar" th:action="@{/admin/inventario}" method="get" role="search">
+                    <div class="field">
+                        <label for="product-search">Buscar</label>
+                        <input id="product-search" type="search" name="q" th:value="${q}"
+                               placeholder="Nombre, descripción o ID" autocomplete="off">
+                    </div>
+
+                    <div class="field">
+                        <label for="filter-product-type">Tipo</label>
+                        <select id="filter-product-type" name="tipo">
+                            <option value="all" th:selected="${tipoFiltro == 'all'}">Todos</option>
+                            <option value="entrada" th:selected="${tipoFiltro == 'entrada'}">Entradas</option>
+                            <option value="pase" th:selected="${tipoFiltro == 'pase'}">Pases</option>
+                            <option value="merchandising" th:selected="${tipoFiltro == 'merchandising'}">Merchandising</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="filter-product-stock">Disponibilidad</label>
+                        <select id="filter-product-stock" name="stock">
+                            <option value="all" th:selected="${stockFiltro == 'all'}">Todo el stock</option>
+                            <option value="disponible" th:selected="${stockFiltro == 'disponible'}">Disponible</option>
+                            <option value="bajo" th:selected="${stockFiltro == 'bajo'}">Stock bajo</option>
+                            <option value="agotado" th:selected="${stockFiltro == 'agotado'}">Agotado</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn--ghost" type="submit">Filtrar</button>
+                    <a class="btn btn--ghost" th:href="@{/admin/inventario}">Limpiar</a>
+                </form>
+
+                <div class="table-wrap" th:if="${!#lists.isEmpty(productosFiltrados)}">
+                    <table class="data-table">
+                        <caption class="sr-only">Productos y stock en Subsonic Festival</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Producto</th>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">Descripción</th>
+                                <th scope="col">Precio</th>
+                                <th scope="col">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${productosFiltrados}">
+                                <td>
+                                    <div class="user-cell">
+                                        <span class="user-cell__avatar role-proveedor" aria-hidden="true"
+                                              th:text="${#strings.substring(p.nombre != null and !p.nombre.isBlank() ? p.nombre : 'P', 0, 1)}">P</span>
+                                        <span class="user-cell__text">
+                                            <strong th:text="${p.nombre != null and !p.nombre.isBlank() ? p.nombre : 'Producto sin nombre'}">Producto</strong>
+                                            <span class="mono" th:title="${p.id}"
+                                                  th:text="${p.id != null and #strings.length(p.id) > 12 ? #strings.substring(p.id, #strings.length(p.id) - 12) : p.id}">id</span>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${'badge--' + @textos.claseTipoProducto(p.tipo)}"
+                                          th:text="${@textos.tipoProducto(p.tipo)}">Merchandising</span>
+                                </td>
+                                <td>
+                                    <span th:if="${p.descripcion != null and !p.descripcion.isBlank()}"
+                                          th:title="${p.descripcion}"
+                                          th:text="${#strings.abbreviate(p.descripcion, 64)}">Descripción</span>
+                                    <span class="muted" th:unless="${p.descripcion != null and !p.descripcion.isBlank()}">—</span>
+                                </td>
+                                <td class="mono" th:text="${@textos.moneda(p.precio)}">0,00 €</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${'badge--' + @textos.claseStock(p.stockDisponible)}"
+                                          th:text="${(p.stockDisponible != null ? p.stockDisponible : 0) + ' uds'}">0 uds</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(productosFiltrados)}">
+                    <strong th:if="${error != null}">No se ha podido cargar el inventario.</strong>
+                    <strong th:unless="${error != null}">No hay productos que coincidan con los filtros.</strong>
+                    <span th:if="${error == null}">Prueba a cambiar la búsqueda o a limpiar los filtros.</span>
+                </div>
+
+                <p class="table-foot" th:if="${filtrado}"
+                   th:text="|Mostrando ${#lists.size(productosFiltrados)} de ${totalProductos} productos.|">Mostrando 0 de 0 productos.</p>
+                <p class="table-foot" th:unless="${filtrado}"
+                   th:text="|${totalProductos} ${totalProductos == 1 ? 'producto registrado' : 'productos registrados'}.|">0 productos registrados.</p>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/comun :: pie}"></footer>
+</body>
+</html>

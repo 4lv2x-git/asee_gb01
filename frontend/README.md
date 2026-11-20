@@ -12,12 +12,14 @@ el servidor.
 | `/` o `/index.html` | Página principal del festival (HTML estático). |
 | `/login` | Inicio de sesión, registro de clientes y proveedores y recuperación de contraseña. |
 | `/perfil` | Perfil del usuario autenticado: datos personales, datos de proveedor, verificación de correo y baja de cuenta. |
-| `/admin` | Panel de administración. En esta entrega solo incluye la **gestión de usuarios**; eventos, inventario y artistas se incorporarán más adelante. |
+| `/admin` | Panel de administración: gestión de usuarios. |
+| `/admin/eventos` | Consulta de festivales y eventos registrados en `service-festivals`. |
+| `/admin/inventario` | Catálogo y stock de entradas, pases y merchandising del gestor de inventario. |
 | `/cuenta` | Redirección usada por el enlace «Acceso» de la portada: lleva al perfil, al panel de administración o al formulario de acceso según la sesión. |
 | `/api/sesion` | Estado público de la sesión (nombre e iniciales) que usa la portada para mostrar el acceso al perfil cuando hay sesión iniciada. |
 
-Las antiguas rutas `/login.html`, `/perfil.html` y `/admin.html` siguen funcionando y
-redirigen a las rutas limpias.
+Las antiguas rutas `/login.html`, `/perfil.html` y `/admin.html` se mantienen como
+alias de las rutas limpias. El registro se abre en `/login?vista=registro`.
 
 ## Estructura
 
@@ -33,6 +35,11 @@ frontend/
     │       ├── AuthController.java               # /login, /registro, /recuperar, /restablecer, /logout
     │       ├── PerfilController.java             # /perfil y acciones del área personal
     │       ├── AdminController.java              # /admin y gestión de usuarios
+    │       ├── AdminEventosController.java        # /admin/eventos (solo lectura)
+    │       ├── AdminInventarioController.java     # /admin/inventario (solo lectura)
+    │       ├── EventosClient.java                 # Cliente Java de service-festivals
+    │       ├── InventarioClient.java              # Cliente Java del gestor de inventario
+    │       ├── ServicioExternoException.java      # Fallos de microservicios externos
     │       ├── SesionApiController.java          # /api/sesion para la portada estática
     │       ├── UsuariosAuthClient.java           # Cliente Java de subsonic-users-auth
     │       ├── UsuariosAuthException.java        # Errores normalizados de la API
@@ -49,6 +56,8 @@ frontend/
         │   ├── login.html
         │   ├── perfil.html
         │   ├── admin.html
+        │   ├── admin-eventos.html
+        │   ├── admin-inventario.html
         │   ├── admin-editar.html
         │   ├── admin-password.html
         │   ├── confirmar-eliminar.html
@@ -75,6 +84,9 @@ frontend/
 - Maven 3.8 o superior.
 - El microservicio [`subsonic-users-auth`](../components/subsonic-users-auth/README.md)
   en marcha para usar el acceso, el perfil y el panel de administración.
+- Opcionalmente, `service-festivals` y `subsonic-inventory-manager` para los módulos
+  de eventos e inventario. Si no están disponibles, el panel sigue cargando y
+  muestra un aviso en la propia página.
 
 ## Arrancar el servicio de usuarios
 
@@ -170,7 +182,9 @@ El valor debe ser la **raíz** del servicio, no la ruta `/v1`.
 - `DELETE /v1/usuarios/perfil`: elimina la cuenta tras confirmar en una página
   dedicada.
 
-### Administración (solo usuarios)
+### Administración
+
+#### Usuarios
 
 - `GET /v1/usuarios/admin`: listado completo de cuentas.
 - `PUT /v1/usuarios/admin/{id}`: edición de datos por parte del administrador.
@@ -182,6 +196,26 @@ El valor debe ser la **raíz** del servicio, no la ruta `/v1`.
 La búsqueda y los filtros por rol y estado del panel se aplican en el servidor
 sobre el listado devuelto por la API. Las acciones de edición, cambio de
 contraseña y eliminación tienen páginas propias renderizadas con Thymeleaf.
+
+#### Eventos
+
+`/admin/eventos` consulta `GET /eventos` de `service-festivals` desde
+`EventosClient` y muestra el listado con búsqueda por nombre, ciudad o país y
+filtros por estado (`publicado`, `borrador`, `cancelado`, `finalizado`). El
+panel es de solo lectura: la creación y edición de festivales corresponde al
+microservicio. Si el servicio no está disponible, la página sigue cargando y
+muestra un aviso.
+
+#### Inventario
+
+`/admin/inventario` consulta `GET /inventario/productos` de
+`subsonic-inventory-manager` y resume productos, unidades en stock, valor del
+inventario, stock bajo y agotados. Permite buscar y filtrar por tipo (`entrada`,
+`pase`, `merchandising`) y disponibilidad. También es de solo lectura: las altas y
+los ajustes de stock se hacen en el gestor de inventario.
+
+El módulo de **artistas** permanece deshabilitado en la barra lateral hasta que
+su componente esté disponible.
 
 ## Notas
 

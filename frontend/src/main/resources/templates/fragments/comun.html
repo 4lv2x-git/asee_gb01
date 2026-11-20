@@ -70,6 +70,41 @@
     </div>
 </header>
 
+<aside th:fragment="adminModulos(activo, usuariosTotal, eventosTotal, productosTotal)"
+       class="panel admin-sidebar" aria-label="Módulos del panel">
+    <p class="admin-sidebar__title">Módulos</p>
+    <nav aria-label="Secciones del panel">
+        <a class="sidebar-link"
+           th:classappend="${activo == 'usuarios' ? 'is-active' : ''}"
+           th:href="@{/admin}"
+           th:attr="aria-current=${activo == 'usuarios' ? 'page' : null}">
+            Usuarios
+            <span class="badge" th:if="${usuariosTotal != null}" th:text="${usuariosTotal}">0</span>
+        </a>
+        <a class="sidebar-link"
+           th:classappend="${activo == 'eventos' ? 'is-active' : ''}"
+           th:href="@{/admin/eventos}"
+           th:attr="aria-current=${activo == 'eventos' ? 'page' : null}">
+            Eventos
+            <span class="badge" th:if="${eventosTotal != null}" th:text="${eventosTotal}">0</span>
+        </a>
+        <a class="sidebar-link"
+           th:classappend="${activo == 'inventario' ? 'is-active' : ''}"
+           th:href="@{/admin/inventario}"
+           th:attr="aria-current=${activo == 'inventario' ? 'page' : null}">
+            Inventario
+            <span class="badge" th:if="${productosTotal != null}" th:text="${productosTotal}">0</span>
+        </a>
+        <span class="sidebar-link is-disabled" aria-disabled="true">
+            Artistas <small>Próximamente</small>
+        </span>
+    </nav>
+    <p class="sidebar-note">
+        Gestiona las cuentas, consulta los festivales y supervisa el catálogo y el stock.
+        El módulo de artistas se conectará cuando su servicio esté disponible.
+    </p>
+</aside>
+
 <footer th:fragment="pie" class="account-footer">
     <div class="container account-footer__inner">
         <p>© 2027 Subsonic Festival · Madrid</p>
