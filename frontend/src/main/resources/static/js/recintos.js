@@ -288,7 +288,7 @@ function openGroundDetail(groundId) {
     const ground = findGround(groundId);
     if (!ground) {
         toast("El espacio ya no está disponible");
-        loadGrounds();
+        void loadGrounds();
         return;
     }
 
