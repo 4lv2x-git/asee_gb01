@@ -53,7 +53,7 @@ async function loadFestivals() {
         }
 
         grid.innerHTML = festivals.map((festival, index) => `
-            <article class="festival-card" id="festival-${festival.id}">
+            <article class="festival-card" id="festival-${escapeHtml(festival.id)}">
                 <div class="festival-card__image">
                     <img src="${escapeHtml(festival.imagenUrl || assets[index % assets.length])}" alt="${escapeHtml(festival.nombre)}">
                     <span>${escapeHtml(festival.estado || "Publicado")}</span>
