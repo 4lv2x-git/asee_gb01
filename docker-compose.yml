@@ -55,7 +55,7 @@ name: subsonic-backend
 # fichero, por lo que no son "servicios" ni opciones extra.
 x-common:
   postgres-user: &postgres_user postgres
-  postgres-password: &postgres_password postgres
+  postgres-password: &postgres_password ${POSTGRES_PASSWORD}
   jwt-secret: &jwt_secret "dev-only-cambia-esto"
   internal-api-key: &internal_api_key "dev-only-cambia-esto-tambien"
 
