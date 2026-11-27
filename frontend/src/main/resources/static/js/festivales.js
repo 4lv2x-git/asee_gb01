@@ -68,7 +68,8 @@ async function loadFestivals(query = "") {
             button.addEventListener("click", () => openFestival(button.dataset.festival));
         });
 
-        const selectedId = new URLSearchParams(location.search).get("id");
+        const rawId = new URLSearchParams(location.search).get("id");
+        const selectedId = rawId && /^[a-zA-Z0-9_-]+$/.test(rawId) ? rawId : null;
         if (selectedId) openFestival(selectedId);
     } catch (error) {
         grid.innerHTML = `
@@ -81,12 +82,15 @@ async function loadFestivals(query = "") {
 }
 
 async function openFestival(id) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(String(id ?? ""))) return;
+
     detail.hidden = true;
     try {
+        const encodedId = encodeURIComponent(id);
         const [festivalResponse, passesResponse, scheduleResponse] = await Promise.all([
-            fetch(`/api/gateway/events/${id}`),
-            fetch(`/api/gateway/events/${id}/passes`),
-            fetch(`/api/gateway/events/${id}/schedule`)
+            fetch(`/api/gateway/events/${encodedId}`),
+            fetch(`/api/gateway/events/${encodedId}/passes`),
+            fetch(`/api/gateway/events/${encodedId}/schedule`)
         ]);
         if (!festivalResponse.ok) throw new Error("Festival no encontrado");
         const [festival, passes, schedule] = await Promise.all([
